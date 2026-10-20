@@ -1,8 +1,8 @@
 {
   "compilerOptions": {
     "target": "ES2022",
-    "module": "preserve",
-    "moduleResolution": "bundler",
+    "module": "nodenext",
+    "moduleResolution": "nodenext",
     "resolveJsonModule": true,
     "types": [
       "node"
@@ -14,5 +14,6 @@
   },
   "include": [
     "**/*.ts"
-  ]
+  ],
+  "exclude": ["migrations", "node_modules"]
 }

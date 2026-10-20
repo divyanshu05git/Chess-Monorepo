@@ -3,8 +3,13 @@
   "type": "module",
   "version": "0.0.0",
   "private": true,
+  "exports": { 
+    ".": "./src/index.ts"
+  },
   "scripts": {
-    "contract:emit": "prisma contract emit"
+    "contract:emit": "prisma contract emit",
+    "db:migrate": "prisma db migrate --advance-ref db", 
+    "check-types": "tsc --noEmit"
   },
   "dependencies": {
     "@prisma/orm-postgres": "^8.0.0-rc.18",

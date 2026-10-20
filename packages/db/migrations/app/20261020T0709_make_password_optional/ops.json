@@ -1,0 +1,109 @@
+[
+  {
+    "id": "column.User.googleId",
+    "label": "Add column googleId to User",
+    "summary": "Adds column googleId to table User",
+    "operationClass": "additive",
+    "target": {
+      "id": "postgres",
+      "details": {
+        "schema": "public",
+        "objectType": "column",
+        "name": "googleId",
+        "table": "User"
+      }
+    },
+    "precheck": [
+      {
+        "description": "ensure column \"googleId\" is missing",
+        "sql": "SELECT NOT EXISTS (SELECT 1 AS \"one\" FROM \"information_schema\".\"columns\" WHERE (\"table_schema\" = $1 AND \"table_name\" = $2 AND \"column_name\" = $3)) AS \"result\"",
+        "params": [
+          "public",
+          "User",
+          "googleId"
+        ]
+      },
+      {
+        "description": "ensure table \"User\" is empty before adding NOT NULL column without default",
+        "sql": "SELECT NOT EXISTS (SELECT 1 AS \"one\" FROM \"public\".\"User\" LIMIT 1) AS \"result\"",
+        "params": [],
+        "meta": {
+          "requiredColumn": {
+            "table": "User",
+            "column": "googleId",
+            "reason": "newField"
+          }
+        }
+      }
+    ],
+    "execute": [
+      {
+        "description": "add column \"googleId\"",
+        "sql": "ALTER TABLE \"public\".\"User\" ADD COLUMN \"googleId\" text NOT NULL"
+      }
+    ],
+    "postcheck": [
+      {
+        "description": "verify column \"googleId\" exists",
+        "sql": "SELECT EXISTS (SELECT 1 AS \"one\" FROM \"information_schema\".\"columns\" WHERE (\"table_schema\" = $1 AND \"table_name\" = $2 AND \"column_name\" = $3)) AS \"result\"",
+        "params": [
+          "public",
+          "User",
+          "googleId"
+        ]
+      },
+      {
+        "description": "verify column \"googleId\" is NOT NULL",
+        "sql": "SELECT EXISTS (SELECT 1 AS \"one\" FROM \"information_schema\".\"columns\" WHERE (\"table_schema\" = $1 AND \"table_name\" = $2 AND \"column_name\" = $3 AND \"is_nullable\" = $4)) AS \"result\"",
+        "params": [
+          "public",
+          "User",
+          "googleId",
+          "NO"
+        ]
+      }
+    ]
+  },
+  {
+    "id": "unique.User.User_googleId_key",
+    "label": "Add unique constraint on \"User\" (googleId)",
+    "operationClass": "additive",
+    "target": {
+      "id": "postgres",
+      "details": {
+        "schema": "public",
+        "objectType": "unique",
+        "name": "User_googleId_key",
+        "table": "User"
+      }
+    },
+    "precheck": [
+      {
+        "description": "ensure constraint \"User_googleId_key\" does not exist",
+        "sql": "SELECT NOT EXISTS (SELECT 1 AS \"one\" FROM \"pg_constraint\" AS \"c\" INNER JOIN \"pg_namespace\" AS \"n\" ON \"n\".\"oid\" = \"c\".\"connamespace\" WHERE (\"c\".\"conname\" = $1 AND \"n\".\"nspname\" = $2 AND \"c\".\"conrelid\" = to_regclass($3))) AS \"result\"",
+        "params": [
+          "User_googleId_key",
+          "public",
+          "\"public\".\"User\""
+        ]
+      }
+    ],
+    "execute": [
+      {
+        "description": "add unique constraint \"User_googleId_key\"",
+        "sql": "ALTER TABLE \"public\".\"User\" ADD CONSTRAINT \"User_googleId_key\" UNIQUE (\"googleId\")"
+      }
+    ],
+    "postcheck": [
+      {
+        "description": "verify constraint \"User_googleId_key\" exists",
+        "sql": "SELECT EXISTS (SELECT 1 AS \"one\" FROM \"pg_constraint\" AS \"c\" INNER JOIN \"pg_namespace\" AS \"n\" ON \"n\".\"oid\" = \"c\".\"connamespace\" WHERE (\"c\".\"conname\" = $1 AND \"n\".\"nspname\" = $2 AND \"c\".\"conrelid\" = to_regclass($3))) AS \"result\"",
+        "params": [
+          "User_googleId_key",
+          "public",
+          "\"public\".\"User\""
+        ]
+      }
+    ]
+  }
+]

@@ -13,6 +13,7 @@
   "license": "ISC",
   "description": "",
   "dependencies": {
+    "@repo/db": "^0.0.0",
     "chess": "^1.5.1",
     "chess.js": "^1.4.0",
     "ws": "^8.22.0"

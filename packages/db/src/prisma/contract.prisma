@@ -3,9 +3,10 @@
 model User {
   id        String   @id @default(uuid())
   email     String   @unique
+  googleId  String   @unique
   username  String?
   name      String?
-  password  String
+  password  String?
   gamesP1    Game[] @relation("player1")
   gamesP2    Game[] @relation("player2")
   createdAt TimestamptzString @default(now())
