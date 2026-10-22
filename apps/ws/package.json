@@ -14,8 +14,10 @@
   "description": "",
   "dependencies": {
     "@repo/db": "^0.0.0",
+    "@types/jsonwebtoken": "^9.0.10",
     "chess": "^1.5.1",
     "chess.js": "^1.4.0",
+    "jsonwebtoken": "^9.0.3",
     "ws": "^8.22.0"
   },
   "devDependencies": {

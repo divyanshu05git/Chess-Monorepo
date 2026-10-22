@@ -34,7 +34,8 @@ export default function GoogleLoginButton() {
           localStorage.setItem("user", JSON.stringify(data.user));
 
           console.log("Login successful", data.user);
-          window.location.href = "/game";
+          window.location.href = "/";
+          // window.location.href = "/game";
         } catch (error) {
           console.error("Login failed:", error);
         }
