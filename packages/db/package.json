@@ -4,11 +4,18 @@
   "version": "0.0.0",
   "private": true,
   "exports": { 
-    ".": "./src/index.ts"
+    ".": {
+      "types": "./dist/src/index.d.ts",
+      "import": "./dist/src/index.js"
+    }
   },
   "scripts": {
+    "build": "tsc && cp src/prisma/contract.d.ts dist/src/prisma/contract.d.ts",
     "contract:emit": "prisma contract emit",
+    "migration:plan": "prisma migration plan", 
+    "migration:status": "prisma migration status", 
     "db:migrate": "prisma db migrate --advance-ref db", 
+    "db:verify": "prisma db verify", 
     "check-types": "tsc --noEmit"
   },
   "dependencies": {

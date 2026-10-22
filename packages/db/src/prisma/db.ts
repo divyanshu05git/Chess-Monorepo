@@ -5,5 +5,11 @@ import contractJson from './contract.json' with { type: 'json' };
 
 export const db = postgres<Contract>({
   contractJson,
-  url: process.env['DATABASE_URL']!,
+  // url: process.env['DATABASE_URL']!,
 });
+
+export const connectDb = async () => {
+  await db.connect({
+    url: process.env['DATABASE_URL']!,
+  });
+};

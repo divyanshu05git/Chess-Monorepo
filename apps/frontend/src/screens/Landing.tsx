@@ -1,9 +1,13 @@
 import { useNavigate } from "react-router"
+import GoogleLoginButton from "../components/GoogleLoginButton";
 
 export const Landing=()=>{
     const navigate=useNavigate();
     return (
         <main className="min-h-screen bg-white text-[#171717]">
+          <div className="absolute top-6 right-6 z-10">
+          <GoogleLoginButton />
+        </div>
       <div className="mx-auto flex min-h-screen max-w-6xl items-center px-6 py-12">
         <section className="grid w-full items-center gap-12 md:grid-cols-2 md:gap-20">
 
@@ -76,7 +80,7 @@ export const Landing=()=>{
                 →
               </span>
             </button>
-
+            
             <p className="mt-5 text-center text-xs text-[#938e82] md:text-left">
               Every game is a new opportunity.
             </p>

@@ -4,7 +4,6 @@ type GoogleProfile = {
   googleId: string;
   email: string;
   name: string | undefined;
-  password:string | undefined
 };
 
 export async function findOrCreateUser(input: GoogleProfile) {
@@ -17,9 +16,7 @@ export async function findOrCreateUser(input: GoogleProfile) {
   try {
     return await db.orm.public.User.create({
       email: input.email,
-      googleId: input.googleId,
-      password:input.password
-
+      googleId: input.googleId
     });
   } catch (err) {
     // two first-time logins at the same moment: the other request won
