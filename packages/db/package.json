@@ -3,28 +3,28 @@
   "type": "module",
   "version": "0.0.0",
   "private": true,
-  "exports": { 
+  "exports": {
     ".": {
-      "types": "./dist/src/index.d.ts",
-      "import": "./dist/src/index.js"
+      "types": "./dist/index.d.ts",
+      "import": "./dist/index.js"
     }
   },
   "scripts": {
-    "build": "tsc && cp src/prisma/contract.d.ts dist/src/prisma/contract.d.ts",
+    "build": "tsc && cp src/prisma/contract.d.ts dist/prisma/contract.d.ts",
     "contract:emit": "prisma contract emit",
-    "migration:plan": "prisma migration plan", 
-    "migration:status": "prisma migration status", 
-    "db:migrate": "prisma db migrate --advance-ref db", 
-    "db:verify": "prisma db verify", 
+    "migration:plan": "prisma migration plan",
+    "migration:status": "prisma migration status",
+    "db:migrate": "prisma db migrate --advance-ref db",
+    "db:verify": "prisma db verify",
     "check-types": "tsc --noEmit"
   },
   "dependencies": {
-    "@prisma/orm-postgres": "^8.0.0-rc.18",
+    "@prisma/orm-postgres": "8.0.0-rc.21",
     "dotenv": "^18.0.8"
   },
   "devDependencies": {
     "@prisma/cli-engine": "^0.9.0",
     "@types/node": "^26.6.5",
-    "prisma": "^8.0.0-rc.23"
+    "prisma": "8.0.0-rc.28"
   }
 }

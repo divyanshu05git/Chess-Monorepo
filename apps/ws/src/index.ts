@@ -14,7 +14,7 @@ function checkUser(token: string): string | null {
   try {
     
     const decoded=jwt.verify(token,SECRET!);
-    console.log("inside chckuser ",token)
+    console.log("inside chckuser ")
 
     if(typeof decoded === 'string' || typeof decoded.sub !== "string"){
       return null;
@@ -42,7 +42,7 @@ async function connect() {
 
   wss.on('connection', function connection(ws,request) {
 
-    console.log("Incoming WebSocket connection:",request.url);
+    console.log("Incoming WebSocket connection:");
 
     const url = request.url;
     if (!url) {

@@ -1,0 +1,413 @@
+[
+  {
+    "id": "dropCheckConstraint.Game.Game_moves_elem_not_null_8ad5eaf9",
+    "label": "Drop check constraint \"Game_moves_elem_not_null_8ad5eaf9\" on \"Game\"",
+    "operationClass": "widening",
+    "target": {
+      "id": "postgres",
+      "details": {
+        "schema": "public",
+        "objectType": "checkConstraint",
+        "name": "Game_moves_elem_not_null_8ad5eaf9",
+        "table": "Game"
+      }
+    },
+    "precheck": [
+      {
+        "description": "ensure constraint \"Game_moves_elem_not_null_8ad5eaf9\" exists",
+        "sql": "SELECT EXISTS (SELECT 1 AS \"one\" FROM \"pg_constraint\" AS \"c\" INNER JOIN \"pg_namespace\" AS \"n\" ON \"n\".\"oid\" = \"c\".\"connamespace\" WHERE (\"c\".\"conname\" = $1 AND \"n\".\"nspname\" = $2 AND \"c\".\"conrelid\" = to_regclass($3))) AS \"result\"",
+        "params": [
+          "Game_moves_elem_not_null_8ad5eaf9",
+          "public",
+          "\"public\".\"Game\""
+        ]
+      }
+    ],
+    "execute": [
+      {
+        "description": "drop check constraint \"Game_moves_elem_not_null_8ad5eaf9\"",
+        "sql": "ALTER TABLE \"public\".\"Game\" DROP CONSTRAINT \"Game_moves_elem_not_null_8ad5eaf9\""
+      }
+    ],
+    "postcheck": [
+      {
+        "description": "verify constraint \"Game_moves_elem_not_null_8ad5eaf9\" does not exist",
+        "sql": "SELECT NOT EXISTS (SELECT 1 AS \"one\" FROM \"pg_constraint\" AS \"c\" INNER JOIN \"pg_namespace\" AS \"n\" ON \"n\".\"oid\" = \"c\".\"connamespace\" WHERE (\"c\".\"conname\" = $1 AND \"n\".\"nspname\" = $2 AND \"c\".\"conrelid\" = to_regclass($3))) AS \"result\"",
+        "params": [
+          "Game_moves_elem_not_null_8ad5eaf9",
+          "public",
+          "\"public\".\"Game\""
+        ]
+      }
+    ]
+  },
+  {
+    "id": "dropColumn.Game.moves",
+    "label": "Drop column \"moves\" from \"Game\"",
+    "operationClass": "destructive",
+    "target": {
+      "id": "postgres",
+      "details": {
+        "schema": "public",
+        "objectType": "column",
+        "name": "moves",
+        "table": "Game"
+      }
+    },
+    "precheck": [
+      {
+        "description": "ensure column \"moves\" exists",
+        "sql": "SELECT EXISTS (SELECT 1 AS \"one\" FROM \"information_schema\".\"columns\" WHERE (\"table_schema\" = $1 AND \"table_name\" = $2 AND \"column_name\" = $3)) AS \"result\"",
+        "params": [
+          "public",
+          "Game",
+          "moves"
+        ]
+      }
+    ],
+    "execute": [
+      {
+        "description": "drop column \"moves\"",
+        "sql": "ALTER TABLE \"public\".\"Game\" DROP COLUMN \"moves\""
+      }
+    ],
+    "postcheck": [
+      {
+        "description": "verify column \"moves\" does not exist",
+        "sql": "SELECT NOT EXISTS (SELECT 1 AS \"one\" FROM \"information_schema\".\"columns\" WHERE (\"table_schema\" = $1 AND \"table_name\" = $2 AND \"column_name\" = $3)) AS \"result\"",
+        "params": [
+          "public",
+          "Game",
+          "moves"
+        ]
+      }
+    ]
+  },
+  {
+    "id": "table.Move",
+    "label": "Create table \"Move\"",
+    "summary": "Creates table \"Move\"",
+    "operationClass": "additive",
+    "target": {
+      "id": "postgres",
+      "details": {
+        "schema": "public",
+        "objectType": "table",
+        "name": "Move"
+      }
+    },
+    "precheck": [
+      {
+        "description": "ensure table \"Move\" does not exist",
+        "sql": "SELECT (to_regclass($1)) IS NULL AS \"result\"",
+        "params": [
+          "\"public\".\"Move\""
+        ]
+      }
+    ],
+    "execute": [
+      {
+        "description": "create table \"Move\"",
+        "sql": "CREATE TABLE \"public\".\"Move\" (\n  \"from\" text NOT NULL,\n  \"gameId\" int4 NOT NULL,\n  \"id\" SERIAL NOT NULL,\n  \"moveNumber\" int4 NOT NULL,\n  \"notation\" text,\n  \"playerId\" text NOT NULL,\n  \"to\" text NOT NULL,\n  PRIMARY KEY (\"id\")\n)",
+        "params": []
+      }
+    ],
+    "postcheck": [
+      {
+        "description": "verify table \"Move\" exists",
+        "sql": "SELECT (to_regclass($1)) IS NOT NULL AS \"result\"",
+        "params": [
+          "\"public\".\"Move\""
+        ]
+      }
+    ]
+  },
+  {
+    "id": "column.public.Game.result",
+    "label": "Add column \"result\" to \"Game\"",
+    "operationClass": "additive",
+    "target": {
+      "id": "postgres",
+      "details": {
+        "schema": "public",
+        "objectType": "column",
+        "name": "result",
+        "table": "Game"
+      }
+    },
+    "precheck": [
+      {
+        "description": "ensure column \"result\" is missing",
+        "sql": "SELECT NOT EXISTS (SELECT 1 AS \"one\" FROM \"information_schema\".\"columns\" WHERE (\"table_schema\" = $1 AND \"table_name\" = $2 AND \"column_name\" = $3)) AS \"result\"",
+        "params": [
+          "public",
+          "Game",
+          "result"
+        ]
+      }
+    ],
+    "execute": [
+      {
+        "description": "add column \"result\"",
+        "sql": "ALTER TABLE \"public\".\"Game\" ADD COLUMN \"result\" text"
+      }
+    ],
+    "postcheck": [
+      {
+        "description": "verify column \"result\" exists",
+        "sql": "SELECT EXISTS (SELECT 1 AS \"one\" FROM \"information_schema\".\"columns\" WHERE (\"table_schema\" = $1 AND \"table_name\" = $2 AND \"column_name\" = $3)) AS \"result\"",
+        "params": [
+          "public",
+          "Game",
+          "result"
+        ]
+      }
+    ]
+  },
+  {
+    "id": "column.public.Game.status",
+    "label": "Add column \"status\" to \"Game\"",
+    "operationClass": "additive",
+    "target": {
+      "id": "postgres",
+      "details": {
+        "schema": "public",
+        "objectType": "column",
+        "name": "status",
+        "table": "Game"
+      }
+    },
+    "precheck": [
+      {
+        "description": "ensure column \"status\" is missing",
+        "sql": "SELECT NOT EXISTS (SELECT 1 AS \"one\" FROM \"information_schema\".\"columns\" WHERE (\"table_schema\" = $1 AND \"table_name\" = $2 AND \"column_name\" = $3)) AS \"result\"",
+        "params": [
+          "public",
+          "Game",
+          "status"
+        ]
+      }
+    ],
+    "execute": [
+      {
+        "description": "add column \"status\"",
+        "sql": "ALTER TABLE \"public\".\"Game\" ADD COLUMN \"status\" text DEFAULT 'ONGOING' NOT NULL"
+      }
+    ],
+    "postcheck": [
+      {
+        "description": "verify column \"status\" exists",
+        "sql": "SELECT EXISTS (SELECT 1 AS \"one\" FROM \"information_schema\".\"columns\" WHERE (\"table_schema\" = $1 AND \"table_name\" = $2 AND \"column_name\" = $3)) AS \"result\"",
+        "params": [
+          "public",
+          "Game",
+          "status"
+        ]
+      }
+    ]
+  },
+  {
+    "id": "unique.Move.Move_gameId_moveNumber_key",
+    "label": "Add unique constraint on \"Move\" (gameId, moveNumber)",
+    "operationClass": "additive",
+    "target": {
+      "id": "postgres",
+      "details": {
+        "schema": "public",
+        "objectType": "unique",
+        "name": "Move_gameId_moveNumber_key",
+        "table": "Move"
+      }
+    },
+    "precheck": [
+      {
+        "description": "ensure constraint \"Move_gameId_moveNumber_key\" does not exist",
+        "sql": "SELECT NOT EXISTS (SELECT 1 AS \"one\" FROM \"pg_constraint\" AS \"c\" INNER JOIN \"pg_namespace\" AS \"n\" ON \"n\".\"oid\" = \"c\".\"connamespace\" WHERE (\"c\".\"conname\" = $1 AND \"n\".\"nspname\" = $2 AND \"c\".\"conrelid\" = to_regclass($3))) AS \"result\"",
+        "params": [
+          "Move_gameId_moveNumber_key",
+          "public",
+          "\"public\".\"Move\""
+        ]
+      }
+    ],
+    "execute": [
+      {
+        "description": "add unique constraint \"Move_gameId_moveNumber_key\"",
+        "sql": "ALTER TABLE \"public\".\"Move\" ADD CONSTRAINT \"Move_gameId_moveNumber_key\" UNIQUE (\"gameId\", \"moveNumber\")"
+      }
+    ],
+    "postcheck": [
+      {
+        "description": "verify constraint \"Move_gameId_moveNumber_key\" exists",
+        "sql": "SELECT EXISTS (SELECT 1 AS \"one\" FROM \"pg_constraint\" AS \"c\" INNER JOIN \"pg_namespace\" AS \"n\" ON \"n\".\"oid\" = \"c\".\"connamespace\" WHERE (\"c\".\"conname\" = $1 AND \"n\".\"nspname\" = $2 AND \"c\".\"conrelid\" = to_regclass($3))) AS \"result\"",
+        "params": [
+          "Move_gameId_moveNumber_key",
+          "public",
+          "\"public\".\"Move\""
+        ]
+      }
+    ]
+  },
+  {
+    "id": "index.Move.Move_gameId_idx_6cdb47f8",
+    "label": "Create index \"Move_gameId_idx_6cdb47f8\" on \"Move\"",
+    "operationClass": "additive",
+    "target": {
+      "id": "postgres",
+      "details": {
+        "schema": "public",
+        "objectType": "index",
+        "name": "Move_gameId_idx_6cdb47f8",
+        "table": "Move"
+      }
+    },
+    "precheck": [
+      {
+        "description": "ensure index \"Move_gameId_idx_6cdb47f8\" does not exist",
+        "sql": "SELECT (to_regclass($1)) IS NULL AS \"result\"",
+        "params": [
+          "\"public\".\"Move_gameId_idx_6cdb47f8\""
+        ]
+      }
+    ],
+    "execute": [
+      {
+        "description": "create index \"Move_gameId_idx_6cdb47f8\"",
+        "sql": "CREATE INDEX \"Move_gameId_idx_6cdb47f8\" ON \"public\".\"Move\" (\"gameId\")",
+        "params": []
+      }
+    ],
+    "postcheck": [
+      {
+        "description": "verify index \"Move_gameId_idx_6cdb47f8\" exists",
+        "sql": "SELECT (to_regclass($1)) IS NOT NULL AS \"result\"",
+        "params": [
+          "\"public\".\"Move_gameId_idx_6cdb47f8\""
+        ]
+      }
+    ]
+  },
+  {
+    "id": "index.Move.Move_playerId_idx_710cf1aa",
+    "label": "Create index \"Move_playerId_idx_710cf1aa\" on \"Move\"",
+    "operationClass": "additive",
+    "target": {
+      "id": "postgres",
+      "details": {
+        "schema": "public",
+        "objectType": "index",
+        "name": "Move_playerId_idx_710cf1aa",
+        "table": "Move"
+      }
+    },
+    "precheck": [
+      {
+        "description": "ensure index \"Move_playerId_idx_710cf1aa\" does not exist",
+        "sql": "SELECT (to_regclass($1)) IS NULL AS \"result\"",
+        "params": [
+          "\"public\".\"Move_playerId_idx_710cf1aa\""
+        ]
+      }
+    ],
+    "execute": [
+      {
+        "description": "create index \"Move_playerId_idx_710cf1aa\"",
+        "sql": "CREATE INDEX \"Move_playerId_idx_710cf1aa\" ON \"public\".\"Move\" (\"playerId\")",
+        "params": []
+      }
+    ],
+    "postcheck": [
+      {
+        "description": "verify index \"Move_playerId_idx_710cf1aa\" exists",
+        "sql": "SELECT (to_regclass($1)) IS NOT NULL AS \"result\"",
+        "params": [
+          "\"public\".\"Move_playerId_idx_710cf1aa\""
+        ]
+      }
+    ]
+  },
+  {
+    "id": "foreignKey.Move.Move_gameId_fkey",
+    "label": "Add foreign key \"Move_gameId_fkey\" on \"Move\"",
+    "operationClass": "additive",
+    "target": {
+      "id": "postgres",
+      "details": {
+        "schema": "public",
+        "objectType": "foreignKey",
+        "name": "Move_gameId_fkey",
+        "table": "Move"
+      }
+    },
+    "precheck": [
+      {
+        "description": "ensure FK \"Move_gameId_fkey\" does not exist",
+        "sql": "SELECT NOT EXISTS (SELECT 1 AS \"one\" FROM \"pg_constraint\" AS \"c\" INNER JOIN \"pg_namespace\" AS \"n\" ON \"n\".\"oid\" = \"c\".\"connamespace\" WHERE (\"c\".\"conname\" = $1 AND \"n\".\"nspname\" = $2 AND \"c\".\"conrelid\" = to_regclass($3))) AS \"result\"",
+        "params": [
+          "Move_gameId_fkey",
+          "public",
+          "\"public\".\"Move\""
+        ]
+      }
+    ],
+    "execute": [
+      {
+        "description": "add FK \"Move_gameId_fkey\"",
+        "sql": "ALTER TABLE \"public\".\"Move\"\nADD CONSTRAINT \"Move_gameId_fkey\"\nFOREIGN KEY (\"gameId\")\nREFERENCES \"public\".\"Game\" (\"id\")\nON DELETE CASCADE"
+      }
+    ],
+    "postcheck": [
+      {
+        "description": "verify FK \"Move_gameId_fkey\" exists",
+        "sql": "SELECT EXISTS (SELECT 1 AS \"one\" FROM \"pg_constraint\" AS \"c\" INNER JOIN \"pg_namespace\" AS \"n\" ON \"n\".\"oid\" = \"c\".\"connamespace\" WHERE (\"c\".\"conname\" = $1 AND \"n\".\"nspname\" = $2 AND \"c\".\"conrelid\" = to_regclass($3))) AS \"result\"",
+        "params": [
+          "Move_gameId_fkey",
+          "public",
+          "\"public\".\"Move\""
+        ]
+      }
+    ]
+  },
+  {
+    "id": "foreignKey.Move.Move_playerId_fkey",
+    "label": "Add foreign key \"Move_playerId_fkey\" on \"Move\"",
+    "operationClass": "additive",
+    "target": {
+      "id": "postgres",
+      "details": {
+        "schema": "public",
+        "objectType": "foreignKey",
+        "name": "Move_playerId_fkey",
+        "table": "Move"
+      }
+    },
+    "precheck": [
+      {
+        "description": "ensure FK \"Move_playerId_fkey\" does not exist",
+        "sql": "SELECT NOT EXISTS (SELECT 1 AS \"one\" FROM \"pg_constraint\" AS \"c\" INNER JOIN \"pg_namespace\" AS \"n\" ON \"n\".\"oid\" = \"c\".\"connamespace\" WHERE (\"c\".\"conname\" = $1 AND \"n\".\"nspname\" = $2 AND \"c\".\"conrelid\" = to_regclass($3))) AS \"result\"",
+        "params": [
+          "Move_playerId_fkey",
+          "public",
+          "\"public\".\"Move\""
+        ]
+      }
+    ],
+    "execute": [
+      {
+        "description": "add FK \"Move_playerId_fkey\"",
+        "sql": "ALTER TABLE \"public\".\"Move\"\nADD CONSTRAINT \"Move_playerId_fkey\"\nFOREIGN KEY (\"playerId\")\nREFERENCES \"public\".\"User\" (\"id\")"
+      }
+    ],
+    "postcheck": [
+      {
+        "description": "verify FK \"Move_playerId_fkey\" exists",
+        "sql": "SELECT EXISTS (SELECT 1 AS \"one\" FROM \"pg_constraint\" AS \"c\" INNER JOIN \"pg_namespace\" AS \"n\" ON \"n\".\"oid\" = \"c\".\"connamespace\" WHERE (\"c\".\"conname\" = $1 AND \"n\".\"nspname\" = $2 AND \"c\".\"conrelid\" = to_regclass($3))) AS \"result\"",
+        "params": [
+          "Move_playerId_fkey",
+          "public",
+          "\"public\".\"Move\""
+        ]
+      }
+    ]
+  }
+]

@@ -1,7 +1,7 @@
 // use prisma-8
 
 model User {
-  id        String   @id @default(uuid())
+  id String @id      @onCreate(uuid())
   email     String   @unique
   googleId  String   @unique
   username  String?
@@ -10,7 +10,7 @@ model User {
   gamesP1    Game[] @relation("player1")
   gamesP2    Game[] @relation("player2")
   createdAt TimestamptzString @default(now())
-  updatedAt temporal.updatedAtString()
+  updatedAt temporal.UpdatedAtString
 }
 
 model Game {
@@ -19,7 +19,23 @@ model Game {
   player1   User     @relation("player1",fields: [player1Id], references: [id])
   player2Id  String
   player2   User     @relation("player2",fields: [player2Id], references: [id])
-  moves     String[] 
+  moves     Move[]   
   createdAt TimestamptzString @default(now())
-  updatedAt temporal.updatedAtString()
+  updatedAt temporal.UpdatedAtString
+  result    String?   
+  status    String   @default("ONGOING")
+}
+
+model Move{
+  id        Int      @id @default(autoincrement())
+  gameId    Int
+  game      Game     @relation(fields: [gameId], references: [id])
+  playerId  String
+  player    User     @relation("movePlayer", fields: [playerId], references: [id])
+  from       String
+  to         String
+  notation   String?
+  moveNumber Int
+
+  @@unique([gameId, moveNumber])
 }

@@ -4,7 +4,7 @@ import type { Contract } from './contract.js';
 import contractJson from './contract.json' with { type: 'json' };
 
 export const db = postgres<Contract>({
-  contractJson,
+  contract: contractJson as unknown as Contract,
   // url: process.env['DATABASE_URL']!,
 });
 

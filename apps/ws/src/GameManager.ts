@@ -40,18 +40,26 @@ export class GameManager{
 
     private addHandler(player:Player){
         const user=player.socket;
-        user.on("message",(data)=>{
+        user.on("message",async (data)=>{
             const message=JSON.parse(data.toString());
             console.log(message)
 
             if(message.type===INIT_GAME){
                 console.log("Message received:",data.toString());
+                
                 if(this.pendingUser!==null){
+                    const game = new Game(this.pendingUser, player);
                     //start a game
-                    console.log("Game created")
-                    const game=new Game(this.pendingUser.socket,this.pendingUser.userId,user,player.userId);
-                    this.games.push(game);
-                    this.pendingUser=null;
+                    try{
+                        console.log("Game created from gameManager")
+                        await game.createGameHandler();
+                        this.games.push(game);
+                        this.pendingUser=null;
+                    }
+                    catch(err){
+                        console.log(err);
+                    }
+                    
                 }
                 else{
                     console.log("Waiting for a second player")
@@ -60,7 +68,7 @@ export class GameManager{
             }
 
             if(message.type===MOVE){
-                const game=this.games.find(e=>e.player1===user || e.player2===user)
+                const game=this.games.find(e=>e.player1.socket===user || e.player2.socket===user)
                 if(game){
                     game.makeMove(user,message.payload)
                 }

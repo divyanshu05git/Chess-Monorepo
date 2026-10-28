@@ -8,6 +8,10 @@
       "model": "Game",
       "namespace": "public"
     },
+    "Move": {
+      "model": "Move",
+      "namespace": "public"
+    },
     "User": {
       "model": "User",
       "namespace": "public"
@@ -33,16 +37,6 @@
                   "kind": "scalar"
                 }
               },
-              "moves": {
-                "many": {
-                  "elementNullable": false
-                },
-                "nullable": false,
-                "type": {
-                  "codecId": "pg/text@1",
-                  "kind": "scalar"
-                }
-              },
               "player1Id": {
                 "nullable": false,
                 "type": {
@@ -51,6 +45,20 @@
                 }
               },
               "player2Id": {
+                "nullable": false,
+                "type": {
+                  "codecId": "pg/text@1",
+                  "kind": "scalar"
+                }
+              },
+              "result": {
+                "nullable": true,
+                "type": {
+                  "codecId": "pg/text@1",
+                  "kind": "scalar"
+                }
+              },
+              "status": {
                 "nullable": false,
                 "type": {
                   "codecId": "pg/text@1",
@@ -66,6 +74,21 @@
               }
             },
             "relations": {
+              "moves": {
+                "cardinality": "1:N",
+                "on": {
+                  "localFields": [
+                    "id"
+                  ],
+                  "targetFields": [
+                    "gameId"
+                  ]
+                },
+                "to": {
+                  "model": "Move",
+                  "namespace": "public"
+                }
+              },
               "player1": {
                 "cardinality": "N:1",
                 "nullable": false,
@@ -107,14 +130,17 @@
                 "id": {
                   "column": "id"
                 },
-                "moves": {
-                  "column": "moves"
-                },
                 "player1Id": {
                   "column": "player1Id"
                 },
                 "player2Id": {
                   "column": "player2Id"
+                },
+                "result": {
+                  "column": "result"
+                },
+                "status": {
+                  "column": "status"
                 },
                 "updatedAt": {
                   "column": "updatedAt"
@@ -122,6 +148,120 @@
               },
               "namespaceId": "public",
               "table": "Game"
+            }
+          },
+          "Move": {
+            "fields": {
+              "from": {
+                "nullable": false,
+                "type": {
+                  "codecId": "pg/text@1",
+                  "kind": "scalar"
+                }
+              },
+              "gameId": {
+                "nullable": false,
+                "type": {
+                  "codecId": "pg/int4@1",
+                  "kind": "scalar"
+                }
+              },
+              "id": {
+                "nullable": false,
+                "type": {
+                  "codecId": "pg/int4@1",
+                  "kind": "scalar"
+                }
+              },
+              "moveNumber": {
+                "nullable": false,
+                "type": {
+                  "codecId": "pg/int4@1",
+                  "kind": "scalar"
+                }
+              },
+              "notation": {
+                "nullable": true,
+                "type": {
+                  "codecId": "pg/text@1",
+                  "kind": "scalar"
+                }
+              },
+              "playerId": {
+                "nullable": false,
+                "type": {
+                  "codecId": "pg/text@1",
+                  "kind": "scalar"
+                }
+              },
+              "to": {
+                "nullable": false,
+                "type": {
+                  "codecId": "pg/text@1",
+                  "kind": "scalar"
+                }
+              }
+            },
+            "relations": {
+              "game": {
+                "cardinality": "N:1",
+                "nullable": false,
+                "on": {
+                  "localFields": [
+                    "gameId"
+                  ],
+                  "targetFields": [
+                    "id"
+                  ]
+                },
+                "to": {
+                  "model": "Game",
+                  "namespace": "public"
+                }
+              },
+              "player": {
+                "cardinality": "N:1",
+                "nullable": false,
+                "on": {
+                  "localFields": [
+                    "playerId"
+                  ],
+                  "targetFields": [
+                    "id"
+                  ]
+                },
+                "to": {
+                  "model": "User",
+                  "namespace": "public"
+                }
+              }
+            },
+            "storage": {
+              "fields": {
+                "from": {
+                  "column": "from"
+                },
+                "gameId": {
+                  "column": "gameId"
+                },
+                "id": {
+                  "column": "id"
+                },
+                "moveNumber": {
+                  "column": "moveNumber"
+                },
+                "notation": {
+                  "column": "notation"
+                },
+                "playerId": {
+                  "column": "playerId"
+                },
+                "to": {
+                  "column": "to"
+                }
+              },
+              "namespaceId": "public",
+              "table": "Move"
             }
           },
           "User": {
@@ -256,13 +396,6 @@
         "entries": {
           "table": {
             "Game": {
-              "checks": [
-                {
-                  "expression": "array_position(\"moves\", NULL) IS NULL",
-                  "name": "Game_moves_elem_not_null_8ad5eaf9",
-                  "prefix": "Game_moves_elem_not_null"
-                }
-              ],
               "columns": {
                 "createdAt": {
                   "codecId": "pg/timestamptz-string@1",
@@ -282,14 +415,6 @@
                   },
                   "nullable": false
                 },
-                "moves": {
-                  "codecId": "pg/text@1",
-                  "dataType": "pg/text",
-                  "many": {
-                    "elementNullable": false
-                  },
-                  "nullable": false
-                },
                 "player1Id": {
                   "codecId": "pg/text@1",
                   "dataType": "pg/text",
@@ -298,6 +423,20 @@
                 "player2Id": {
                   "codecId": "pg/text@1",
                   "dataType": "pg/text",
+                  "nullable": false
+                },
+                "result": {
+                  "codecId": "pg/text@1",
+                  "dataType": "pg/text",
+                  "nullable": true
+                },
+                "status": {
+                  "codecId": "pg/text@1",
+                  "dataType": "pg/text",
+                  "default": {
+                    "kind": "literal",
+                    "value": "ONGOING"
+                  },
                   "nullable": false
                 },
                 "updatedAt": {
@@ -370,6 +509,120 @@
                 ]
               },
               "uniques": []
+            },
+            "Move": {
+              "columns": {
+                "from": {
+                  "codecId": "pg/text@1",
+                  "dataType": "pg/text",
+                  "nullable": false
+                },
+                "gameId": {
+                  "codecId": "pg/int4@1",
+                  "dataType": "pg/int4",
+                  "nullable": false
+                },
+                "id": {
+                  "codecId": "pg/int4@1",
+                  "dataType": "pg/int4",
+                  "default": {
+                    "expression": "autoincrement()",
+                    "kind": "function"
+                  },
+                  "nullable": false
+                },
+                "moveNumber": {
+                  "codecId": "pg/int4@1",
+                  "dataType": "pg/int4",
+                  "nullable": false
+                },
+                "notation": {
+                  "codecId": "pg/text@1",
+                  "dataType": "pg/text",
+                  "nullable": true
+                },
+                "playerId": {
+                  "codecId": "pg/text@1",
+                  "dataType": "pg/text",
+                  "nullable": false
+                },
+                "to": {
+                  "codecId": "pg/text@1",
+                  "dataType": "pg/text",
+                  "nullable": false
+                }
+              },
+              "foreignKeys": [
+                {
+                  "index": {
+                    "name": "Move_gameId_idx_6cdb47f8"
+                  },
+                  "source": {
+                    "columns": [
+                      "gameId"
+                    ],
+                    "namespaceId": "public",
+                    "tableName": "Move"
+                  },
+                  "target": {
+                    "columns": [
+                      "id"
+                    ],
+                    "namespaceId": "public",
+                    "tableName": "Game"
+                  }
+                },
+                {
+                  "index": {
+                    "name": "Move_playerId_idx_710cf1aa"
+                  },
+                  "source": {
+                    "columns": [
+                      "playerId"
+                    ],
+                    "namespaceId": "public",
+                    "tableName": "Move"
+                  },
+                  "target": {
+                    "columns": [
+                      "id"
+                    ],
+                    "namespaceId": "public",
+                    "tableName": "User"
+                  }
+                }
+              ],
+              "indexes": [
+                {
+                  "columns": [
+                    "gameId"
+                  ],
+                  "name": "Move_gameId_idx_6cdb47f8",
+                  "prefix": "Move_gameId_idx",
+                  "unique": false
+                },
+                {
+                  "columns": [
+                    "playerId"
+                  ],
+                  "name": "Move_playerId_idx_710cf1aa",
+                  "prefix": "Move_playerId_idx",
+                  "unique": false
+                }
+              ],
+              "primaryKey": {
+                "columns": [
+                  "id"
+                ]
+              },
+              "uniques": [
+                {
+                  "columns": [
+                    "gameId",
+                    "moveNumber"
+                  ]
+                }
+              ]
             },
             "User": {
               "columns": {
@@ -444,19 +697,19 @@
         "kind": "postgres-schema"
       }
     },
-    "storageHash": "0005a3f2fc95509760d79061ac9d132c883a00510734ae7e9566fc5ae31ee81a"
+    "storageHash": "36be899a249c1458b51e12aa28555c20602233b34652b4b901a969247279422e"
   },
   "execution": {
-    "executionHash": "d08e848d82c878ac629a351000d35c0c5d52331172bbb23cdf59765d3436f2db",
+    "executionHash": "664fc422b63c1c7e5a3817288cbe5e0b39b87aaa2fea195654b1ba979ddacd47",
     "mutations": {
       "defaults": [
         {
           "onCreate": {
-            "id": "timestampNow",
+            "id": "timestamptzStringNow",
             "kind": "generator"
           },
           "onUpdate": {
-            "id": "timestampNow",
+            "id": "timestamptzStringNow",
             "kind": "generator"
           },
           "ref": {
@@ -478,11 +731,11 @@
         },
         {
           "onCreate": {
-            "id": "timestampNow",
+            "id": "timestamptzStringNow",
             "kind": "generator"
           },
           "onUpdate": {
-            "id": "timestampNow",
+            "id": "timestamptzStringNow",
             "kind": "generator"
           },
           "ref": {
