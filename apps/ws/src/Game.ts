@@ -1,6 +1,6 @@
 import { WebSocket } from "ws"
 import {Chess} from 'chess.js'
-import { GAME_OVER, INIT_GAME, MOVE } from "./messages.js"
+import { GAME_OVER, INIT_GAME, MOVE, type MoveDb } from "./messages.js"
 import { db } from "@repo/db";
 
 export class Game{
@@ -11,6 +11,7 @@ export class Game{
     private startTime:Date;
     private movesCount:number
     private gameId:number
+    private writeQueue:Promise<void>
 
     constructor(player1:{userId:string,socket:WebSocket},player2:{userId:string,socket:WebSocket}){
         this.player1=player1;
@@ -20,6 +21,7 @@ export class Game{
         this.startTime=new Date();
         this.movesCount=0;
         this.gameId=-1
+        this.writeQueue=Promise.resolve();
 
 
         this.player1.socket.send(JSON.stringify({
@@ -102,6 +104,8 @@ export class Game{
 
             //validate the move structure by zod schema
             //validate the move
+
+            let currMove:MoveDb;
             try{
                 this.board.move(move)
                 const obj={
@@ -111,14 +115,21 @@ export class Game{
                 }
                 // this.moves.push(JSON.stringify(obj)) //moves:string[]
                 
-                const currMove=await db.orm.public.Move.create({
+                currMove={
                     gameId:this.gameId,
                     playerId:user===this.player1.socket?this.player1.userId:this.player2.userId,
                     from:move.from,
                     to:move.to,
                     moveNumber:this.movesCount+1
-                })
+                }
 
+                this.writeQueue=this.writeQueue.catch(()=>{
+                    console.log("previous move was not saved")
+                })
+                .then(async ()=>{
+                    await db.orm.public.Move.create(currMove)
+                    
+                });
 
             }
             catch(e){
@@ -146,6 +157,9 @@ export class Game{
                     reason=this.board.isStalemate()?"stalemate":"draw";
                 }
 
+                //finish all insertion in move db
+                await this.writeQueue;
+
                 await db.orm.public.Game.where({id:this.gameId}).update({
                     result:(result==="draw")?"DRAW":result+" WINS",
                     status:"FINISHED"
@@ -161,7 +175,6 @@ export class Game{
                     type:GAME_OVER,
                     payload:{result,reason}
                 }))
-
 
                 return;
             }
