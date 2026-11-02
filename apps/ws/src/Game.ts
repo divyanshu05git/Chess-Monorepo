@@ -1,6 +1,6 @@
 import { WebSocket } from "ws"
 import {Chess} from 'chess.js'
-import { GAME_OVER, INIT_GAME, MOVE, type MoveDb } from "./messages.js"
+import { GAME_OVER, INIT_GAME, MOVE, RESUME_GAME, type MoveDb } from "./messages.js"
 import { db } from "@repo/db";
 
 export class Game{
@@ -38,6 +38,10 @@ export class Game{
             }
         }))
 
+    }
+
+    getGameId():number{
+        return this.gameId;
     }
 
     async createGameHandler(){

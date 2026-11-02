@@ -12,6 +12,7 @@ function App() {
     <Routes>
       <Route path="/" element={<Landing/>}/>
       <Route path="/game" element={<GamePath/>}/>
+      <Route path="/game/:gameId" element={<GamePath />} />
     </Routes>
   </BrowserRouter>
     </>

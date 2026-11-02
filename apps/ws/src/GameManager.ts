@@ -1,7 +1,7 @@
 
 import { WebSocket } from "ws";
 import {Game} from "./Game.js";
-import { INIT_GAME,MOVE } from "./messages.js";
+import { INIT_GAME,MOVE, RESUME_GAME } from "./messages.js";
 
 type Player = {
     socket: WebSocket;
@@ -11,12 +11,14 @@ type Player = {
 export class GameManager{
     private games:Game[];
     private users:Player[]
+    private pendingGameId:string | null
     private pendingUser:Player | null
 
     constructor(){
         this.games=[]
         this.users=[]
         this.pendingUser=null
+        this.pendingGameId=null;
     }
 
     addUser(user:WebSocket,userId:string){
@@ -73,6 +75,7 @@ export class GameManager{
                     game.makeMove(user,message.payload)
                 }
             }
+
         })
     }
 }

@@ -1,19 +1,26 @@
-import { useEffect, useState } from "react";
+import { useEffect, useState ,useRef} from "react";
 import { ChessBoard } from "../components/ChessBoard";
 import { useSocket } from "../hooks/useSocket";
 import { Chess,type Color } from "chess.js";
+import { useNavigate } from "react-router";
+import { useParams } from "react-router";
+
 
 export const INIT_GAME="init_game"
 export const MOVE="move"
 export const GAME_OVER="game_over"
+export const RESUME_GAME="resume_game"
 
 export const GamePath = () => {
   const socket=useSocket();
+  const navigate=useNavigate();
+  const {gameId}=useParams<{gameId:string}>()
 
   const [chess,setChess]=useState(()=>new Chess())
   const [board,setBoard]=useState(chess.board())
   const [myColor,setMyColor]=useState<Color | null>(null)
   const [started,setStarted]=useState(false);
+
 
   useEffect(()=>{
     if(!socket) return;
@@ -28,6 +35,11 @@ export const GamePath = () => {
           setStarted(true);
           setMyColor(message.payload.color === "black" ? "b" : "w")
           setBoard(chess.board())
+
+          if (gameId) {
+            navigate(`/game/${gameId}`);
+          }
+
           break
 
         case MOVE:
@@ -35,13 +47,14 @@ export const GamePath = () => {
           chess.move(move);
           setBoard(chess.board())
           break
-    
+
         case GAME_OVER:
           setStarted(false)
           break
       }
     }
-  },[socket])
+  },[socket,navigate])
+
 
   if(!socket) return <div>Connecting.....</div>
 
@@ -51,7 +64,7 @@ export const GamePath = () => {
     <ChessBoard chess={chess} setBoard={setBoard} socket={socket} board={board} myColor={myColor} />
   </div>
 
-  {!started && (
+  {!started &&(
     <button
       className="w-full max-w-[560px] bg-[#81b64c] hover:bg-[#95c15f] font-bold text-2xl py-4 rounded-lg"
       onClick={() => {
