@@ -1,7 +1,6 @@
 import express from "express";
 import cors from "cors"
 import { authRouter } from "./routes/auth.js";
-import { getGameRouter } from "./routes/gameRouter.js";
 import { db } from "@repo/db";
 import { connectDb } from "./config/connectDb.js";
 
@@ -12,7 +11,6 @@ app.use(express.json());
 app.use(cors());
 
 app.use("/auth", authRouter);
-app.use("/",getGameRouter)
 
 async function main() {
   await connectDb();

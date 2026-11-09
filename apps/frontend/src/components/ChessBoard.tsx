@@ -20,82 +20,91 @@ export const ChessBoard = ({board , socket , setBoard ,chess,myColor}:{
 
   return (
     <div className="grid grid-cols-8 grid-rows-8 aspect-square w-full rounded-xl overflow-hidden">
-      {board.map((row, i) =>
-        row.map((piece, j) => {
-          const name = (String.fromCharCode(97 + j) + (8 - i)) as Square;
-          const isDark = (i + j) % 2 === 1;
+      {board.map((_, i) =>
+  board[i].map((_, j) => {
+    const sourceRow = myColor === "b" ? 7 - i : i;
+    const sourceCol = myColor === "b" ? 7 - j : j;
 
-          return (
-            <div
-              key={name}
+    const piece = board[sourceRow][sourceCol];
 
-              onClick={()=>{
-                if(!myColor || chess.turn()!==myColor) return;
+    // Actual chess square, not display position
+    const name = (
+      String.fromCharCode(97 + sourceCol) + (8 - sourceRow)
+    ) as Square;
 
-                if(!from){
-                  if(piece && piece.color===myColor) setFrom(name);
-                  return;
-                }
-                
-                //clicking again
-                if(from==name){
-                  setFrom(null)
-                  return;
-                }
+    const isDark = (i + j) % 2 === 1;
 
-                try{
-                  chess.move({ from, to: name, promotion: "q" }) //throws error if invalid
+    return (
+      <div
+        key={name}
+        onClick={() => {
+          if (chess.turn() !== myColor) return;
+
+          if (!from) {
+            if (piece && piece.color === myColor) {
+              setFrom(name);
+            }
+            return;
+          }
+
+          if (from === name) {
+            setFrom(null);
+            return;
+          }
+
+          try {
+            chess.move({ from, to: name, promotion: "q" }) //throws error if invalid
               
-                  setBoard(chess.board()) //update on the screen
-                  socket.send(
-                    JSON.stringify({
-                      type:"move",
-                      payload:{
-                        from,
-                        to:name,
-                        promotion:"q"
-                      }
-                    })
-                  )
-                }
-                catch(err){
-                  
-                }
+            setBoard(chess.board()) //update on the screen
+              socket.send(
+                JSON.stringify({
+                    type:"move",
+                    payload:{
+                      from,
+                      to:name,
+                      promotion:"q"
+                    }
+                })
+              )
+          } catch (err) {
+            console.log("Move failed:", err);
+          }
 
+          setFrom(null);
+        }}
+        className={`relative flex items-center justify-center cursor-pointer overflow-hidden ${
+          isDark ? "bg-[#7cb342]" : "bg-[#b6e86a]"
+        }`}
+      >
+        {j === 0 && (
+          <span className="absolute top-0.5 left-1 text-xs font-bold opacity-60">
+            {name[1]}
+          </span>
+        )}
 
-                setFrom(null)
+        {i === 7 && (
+          <span className="absolute bottom-0.5 right-1 text-xs font-bold opacity-60">
+            {name[0]}
+          </span>
+        )}
 
-              }}
-              className={`relative flex items-center justify-center cursor-pointer overflow-hidden ${
-                isDark ? "bg-[#7cb342]" : "bg-[#b6e86a]"
-              }`}
-            >
-              {j === 0 && (
-                <span className="absolute top-0.5 left-1 text-xs font-bold opacity-60">
-                  {8 - i}
-                </span>
-              )}
-              {i === 7 && (
-                <span className="absolute bottom-0.5 right-1 text-xs font-bold opacity-60">
-                  {String.fromCharCode(97 + j)}
-                </span>
-              )}
-              {piece && (
-                <span
-                  className={`text-5xl leading-none select-none pointer-events-none ${
-                    piece.color === "w" ? "text-white" : "text-black"
-                  }`}
-                  style={{
-                    WebkitTextStroke: piece.color === "w" ? "1.5px #000" : "1px #fff",
-                  }}
-                >
-                  {symbols[piece.type]}
-                </span>
-              )}
-            </div>
-          );
-        })
-      )}
+        {piece && (
+          <span
+            className={`text-5xl leading-none select-none pointer-events-none ${
+              piece.color === "w" ? "text-white" : "text-black"
+            }`}
+            style={{
+              WebkitTextStroke:
+                piece.color === "w" ? "1.5px #000" : "1px #fff"
+            }}
+          >
+            {symbols[piece.type]}
+          </span>
+        )}
+      </div>
+    );
+  })
+)}
     </div>
   );
 };

@@ -1,11 +1,17 @@
 import { WebSocket } from "ws"
 import {Chess} from 'chess.js'
-import { GAME_OVER, INIT_GAME, MOVE, RESUME_GAME, type MoveDb } from "./messages.js"
+import { GAME_OVER, INIT_GAME, MOVE, type MoveDb } from "./messages.js"
 import { db } from "@repo/db";
 
+
+type Player={
+    userId:string,
+    socket:WebSocket | null
+}
+
 export class Game{
-    public player1:{userId:string,socket:WebSocket}
-    public player2:{userId:string,socket:WebSocket}
+    public player1:Player
+    public player2:Player
     private board: Chess
     // private moves:string[]
     private startTime:Date;
@@ -13,31 +19,86 @@ export class Game{
     private gameId:number
     private writeQueue:Promise<void>
 
-    constructor(player1:{userId:string,socket:WebSocket},player2:{userId:string,socket:WebSocket}){
+    constructor(player1:Player,player2:Player,startTime:Date=new Date(),gameId:number=-1){
         this.player1=player1;
         this.player2=player2;
         this.board=new Chess();
         // this.moves=[];
-        this.startTime=new Date();
+        this.startTime=startTime;
         this.movesCount=0;
-        this.gameId=-1
+        this.gameId=gameId
         this.writeQueue=Promise.resolve();
 
+    }
 
-        this.player1.socket.send(JSON.stringify({
-            type:"init_game",
-            payload:{
-                color:"white"
-            }
-        }))
+    async resumeGame(userId:string){
+        try{
 
-        this.player2.socket.send(JSON.stringify({
-            type:"init_game",
-            payload:{
-                color:"black"
-            }
-        }))
+            console.log("1. Entered resumeGame");
+            const currentPlayer=(this.player1.userId==userId)?this.player1:this.player2;
+            const opponent=(currentPlayer===this.player1)?this.player2:this.player1;
 
+            const moves=await db.orm.public.Move.where({gameId:this.gameId}).all();
+            const sortedMoves=[...moves].sort((a,b)=>
+                a.moveNumber-b.moveNumber
+            )
+
+            console.log("2. Moves fetched:", moves.length);
+
+            const isPlayer1 = this.player1.userId === userId;
+
+            console.log("3. Sending response");
+            currentPlayer.socket?.send(JSON.stringify({
+                type:"join_game",
+                payload: {
+                    gameId: this.gameId,
+                    color: isPlayer1 ? "white" : "black",
+                    currentPlayer: currentPlayer.userId,
+                    opponent: opponent.userId,
+                    moves: sortedMoves,
+                    status: "IN_PROGRESS"
+                }
+            }))
+            console.log("4. Response sent");
+        }
+        catch(err){
+            console.log("Error from Game.ts/resumeGame")
+        }    
+
+    }
+
+    seedMoves(moves:{
+        id:number,
+        gameId:number,
+        playerId:string,
+        from:string,
+        to:string,
+        notation:string | null,
+        moveNumber:number
+
+    }[]){
+
+        this.board.reset();
+
+        for(const move of moves){
+            this.board.move({from:move.from,to:move.to})
+        }
+
+        this.movesCount=moves.length;
+    }
+
+    reconnectPlayer(userId:string,socket:WebSocket){
+        if(this.player1.userId===userId){
+            this.player1.socket=socket;
+            return true;
+        }
+
+        if(this.player2.userId===userId){
+            this.player2.socket=socket;
+            return true;
+        }
+
+        return false;
     }
 
     getGameId():number{
@@ -58,7 +119,7 @@ export class Game{
         const blackPlayer=await db.orm.public.User.where({ id:this.player2.userId }).first();
 
         if(this.player1){
-            this.player1.socket.send(JSON.stringify({
+            this.player1.socket?.send(JSON.stringify({
                 type:INIT_GAME,
                 payload:{
                     color:"white",
@@ -70,7 +131,7 @@ export class Game{
         }
 
         if(this.player2){
-            this.player2.socket.send(JSON.stringify({
+            this.player2.socket?.send(JSON.stringify({
                 type:INIT_GAME,
                 payload:{
                     color:"black",
@@ -112,12 +173,6 @@ export class Game{
             let currMove:MoveDb;
             try{
                 this.board.move(move)
-                const obj={
-                    player:user===this.player1.socket?this.player1.userId:this.player2.userId,
-                    from:move.from,
-                    to:move.to
-                }
-                // this.moves.push(JSON.stringify(obj)) //moves:string[]
                 
                 currMove={
                     gameId:this.gameId,
@@ -165,17 +220,17 @@ export class Game{
                 await this.writeQueue;
 
                 await db.orm.public.Game.where({id:this.gameId}).update({
-                    result:(result==="draw")?"DRAW":result+" WINS",
-                    status:"FINISHED"
+                    result:(result==="draw")?"DRAW":result==="white"?"WHITE_WINS":"BLACK_WINS",
+                    status:"COMPLETED"
                 })
 
 
-                this.player1.socket.send(JSON.stringify({
+                this.player1.socket?.send(JSON.stringify({
                     type:GAME_OVER,
                     payload:{result,reason}
                 }))
 
-                this.player2.socket.send(JSON.stringify({
+                this.player2.socket?.send(JSON.stringify({
                     type:GAME_OVER,
                     payload:{result,reason}
                 }))
@@ -185,13 +240,13 @@ export class Game{
 
             //sends to the opposite player
             if(this.movesCount%2===0){
-                this.player2.socket.send(JSON.stringify({
+                this.player2.socket?.send(JSON.stringify({
                     type:MOVE,
                     payload:move
                 }))
             }
             else{
-                this.player1.socket.send(JSON.stringify({
+                this.player1.socket?.send(JSON.stringify({
                     type:MOVE,
                     payload:move
                 }))

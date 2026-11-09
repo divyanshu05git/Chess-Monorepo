@@ -20,11 +20,83 @@
   "domain": {
     "namespaces": {
       "public": {
+        "enum": {
+          "GameResult": {
+            "codecId": "pg/text@1",
+            "members": [
+              {
+                "name": "WHITE_WINS",
+                "value": "WHITE_WINS"
+              },
+              {
+                "name": "BLACK_WINS",
+                "value": "BLACK_WINS"
+              },
+              {
+                "name": "DRAW",
+                "value": "DRAW"
+              }
+            ]
+          },
+          "GameStatus": {
+            "codecId": "pg/text@1",
+            "members": [
+              {
+                "name": "IN_PROGRESS",
+                "value": "IN_PROGRESS"
+              },
+              {
+                "name": "COMPLETED",
+                "value": "COMPLETED"
+              },
+              {
+                "name": "ABANDONED",
+                "value": "ABANDONED"
+              },
+              {
+                "name": "TIME_UP",
+                "value": "TIME_UP"
+              },
+              {
+                "name": "PLAYER_EXIT",
+                "value": "PLAYER_EXIT"
+              }
+            ]
+          },
+          "TimeControl": {
+            "codecId": "pg/text@1",
+            "members": [
+              {
+                "name": "CLASSICAL",
+                "value": "CLASSICAL"
+              },
+              {
+                "name": "RAPID",
+                "value": "RAPID"
+              },
+              {
+                "name": "BLITZ",
+                "value": "BLITZ"
+              },
+              {
+                "name": "BULLET",
+                "value": "BULLET"
+              }
+            ]
+          }
+        },
         "models": {
           "Game": {
             "fields": {
               "createdAt": {
                 "nullable": false,
+                "type": {
+                  "codecId": "pg/timestamptz-string@1",
+                  "kind": "scalar"
+                }
+              },
+              "endAt": {
+                "nullable": true,
                 "type": {
                   "codecId": "pg/timestamptz-string@1",
                   "kind": "scalar"
@@ -56,6 +128,12 @@
                 "type": {
                   "codecId": "pg/text@1",
                   "kind": "scalar"
+                },
+                "valueSet": {
+                  "entityKind": "enum",
+                  "entityName": "GameResult",
+                  "namespaceId": "public",
+                  "plane": "domain"
                 }
               },
               "status": {
@@ -63,13 +141,25 @@
                 "type": {
                   "codecId": "pg/text@1",
                   "kind": "scalar"
+                },
+                "valueSet": {
+                  "entityKind": "enum",
+                  "entityName": "GameStatus",
+                  "namespaceId": "public",
+                  "plane": "domain"
                 }
               },
-              "updatedAt": {
-                "nullable": false,
+              "timeControl": {
+                "nullable": true,
                 "type": {
-                  "codecId": "pg/timestamptz-string@1",
+                  "codecId": "pg/text@1",
                   "kind": "scalar"
+                },
+                "valueSet": {
+                  "entityKind": "enum",
+                  "entityName": "TimeControl",
+                  "namespaceId": "public",
+                  "plane": "domain"
                 }
               }
             },
@@ -127,6 +217,9 @@
                 "createdAt": {
                   "column": "createdAt"
                 },
+                "endAt": {
+                  "column": "endAt"
+                },
                 "id": {
                   "column": "id"
                 },
@@ -142,8 +235,8 @@
                 "status": {
                   "column": "status"
                 },
-                "updatedAt": {
-                  "column": "updatedAt"
+                "timeControl": {
+                  "column": "timeControl"
                 }
               },
               "namespaceId": "public",
@@ -396,6 +489,23 @@
         "entries": {
           "table": {
             "Game": {
+              "checks": [
+                {
+                  "expression": "\"result\" IN ('WHITE_WINS', 'BLACK_WINS', 'DRAW')",
+                  "name": "Game_result_check_df6ba410",
+                  "prefix": "Game_result_check"
+                },
+                {
+                  "expression": "\"status\" IN ('IN_PROGRESS', 'COMPLETED', 'ABANDONED', 'TIME_UP', 'PLAYER_EXIT')",
+                  "name": "Game_status_check_803570ff",
+                  "prefix": "Game_status_check"
+                },
+                {
+                  "expression": "\"timeControl\" IN ('CLASSICAL', 'RAPID', 'BLITZ', 'BULLET')",
+                  "name": "Game_timeControl_check_3f660a42",
+                  "prefix": "Game_timeControl_check"
+                }
+              ],
               "columns": {
                 "createdAt": {
                   "codecId": "pg/timestamptz-string@1",
@@ -405,6 +515,11 @@
                     "kind": "function"
                   },
                   "nullable": false
+                },
+                "endAt": {
+                  "codecId": "pg/timestamptz-string@1",
+                  "dataType": "pg/timestamptz",
+                  "nullable": true
                 },
                 "id": {
                   "codecId": "pg/int4@1",
@@ -428,21 +543,39 @@
                 "result": {
                   "codecId": "pg/text@1",
                   "dataType": "pg/text",
-                  "nullable": true
+                  "nullable": true,
+                  "valueSet": {
+                    "entityKind": "valueSet",
+                    "entityName": "GameResult",
+                    "namespaceId": "public",
+                    "plane": "storage"
+                  }
                 },
                 "status": {
                   "codecId": "pg/text@1",
                   "dataType": "pg/text",
                   "default": {
                     "kind": "literal",
-                    "value": "ONGOING"
+                    "value": "IN_PROGRESS"
                   },
-                  "nullable": false
+                  "nullable": false,
+                  "valueSet": {
+                    "entityKind": "valueSet",
+                    "entityName": "GameStatus",
+                    "namespaceId": "public",
+                    "plane": "storage"
+                  }
                 },
-                "updatedAt": {
-                  "codecId": "pg/timestamptz-string@1",
-                  "dataType": "pg/timestamptz",
-                  "nullable": false
+                "timeControl": {
+                  "codecId": "pg/text@1",
+                  "dataType": "pg/text",
+                  "nullable": true,
+                  "valueSet": {
+                    "entityKind": "valueSet",
+                    "entityName": "TimeControl",
+                    "namespaceId": "public",
+                    "plane": "storage"
+                  }
                 }
               },
               "foreignKeys": [
@@ -691,33 +824,47 @@
                 }
               ]
             }
+          },
+          "valueSet": {
+            "GameResult": {
+              "kind": "valueSet",
+              "values": [
+                "WHITE_WINS",
+                "BLACK_WINS",
+                "DRAW"
+              ]
+            },
+            "GameStatus": {
+              "kind": "valueSet",
+              "values": [
+                "IN_PROGRESS",
+                "COMPLETED",
+                "ABANDONED",
+                "TIME_UP",
+                "PLAYER_EXIT"
+              ]
+            },
+            "TimeControl": {
+              "kind": "valueSet",
+              "values": [
+                "CLASSICAL",
+                "RAPID",
+                "BLITZ",
+                "BULLET"
+              ]
+            }
           }
         },
         "id": "public",
         "kind": "postgres-schema"
       }
     },
-    "storageHash": "36be899a249c1458b51e12aa28555c20602233b34652b4b901a969247279422e"
+    "storageHash": "fb8a208487f962ed183271302b03215b913a62a9a25b347adfdd009c0a37e0e4"
   },
   "execution": {
-    "executionHash": "664fc422b63c1c7e5a3817288cbe5e0b39b87aaa2fea195654b1ba979ddacd47",
+    "executionHash": "face4cf3e521c7a0aaa6b32e0a661c1a9f6e6d8a15491881a227d9359739b085",
     "mutations": {
       "defaults": [
-        {
-          "onCreate": {
-            "id": "timestamptzStringNow",
-            "kind": "generator"
-          },
-          "onUpdate": {
-            "id": "timestamptzStringNow",
-            "kind": "generator"
-          },
-          "ref": {
-            "entry": "Game",
-            "field": "updatedAt",
-            "namespace": "public"
-          }
-        },
         {
           "onCreate": {
             "id": "uuidv4",

@@ -23,9 +23,9 @@ import type {
 } from '@prisma/orm-postgres/contract/types';
 
 export type StorageHash =
-  StorageHashBase<'36be899a249c1458b51e12aa28555c20602233b34652b4b901a969247279422e'>;
+  StorageHashBase<'fb8a208487f962ed183271302b03215b913a62a9a25b347adfdd009c0a37e0e4'>;
 export type ExecutionHash =
-  ExecutionHashBase<'664fc422b63c1c7e5a3817288cbe5e0b39b87aaa2fea195654b1ba979ddacd47'>;
+  ExecutionHashBase<'face4cf3e521c7a0aaa6b32e0a661c1a9f6e6d8a15491881a227d9359739b085'>;
 export type ProfileHash =
   ProfileHashBase<'3916f444a8a17ad749191acf9e08dad97d1a327b88c2f1d45d12f240296aa8b2'>;
 
@@ -270,7 +270,26 @@ type DefaultLiteralValue<CodecId extends string, Encoded> = CodecId extends keyo
   : Encoded;
 type ParameterizedOutputTypeFunctions = PgParameterizedOutputTypes;
 
-type FieldTypeOverrides = {};
+type FieldTypeOverrides = {
+  readonly public: {
+    readonly models: {
+      readonly Game: {
+        readonly result: {
+          readonly output: 'WHITE_WINS' | 'BLACK_WINS' | 'DRAW';
+          readonly input: 'WHITE_WINS' | 'BLACK_WINS' | 'DRAW';
+        };
+        readonly status: {
+          readonly output: 'IN_PROGRESS' | 'COMPLETED' | 'ABANDONED' | 'TIME_UP' | 'PLAYER_EXIT';
+          readonly input: 'IN_PROGRESS' | 'COMPLETED' | 'ABANDONED' | 'TIME_UP' | 'PLAYER_EXIT';
+        };
+        readonly timeControl: {
+          readonly output: 'CLASSICAL' | 'RAPID' | 'BLITZ' | 'BULLET';
+          readonly input: 'CLASSICAL' | 'RAPID' | 'BLITZ' | 'BULLET';
+        };
+      };
+    };
+  };
+};
 export type FieldOutputTypes = FieldTypesFromDomain<
   ContractBase['domain']['namespaces'],
   CodecTypes,
@@ -285,7 +304,24 @@ export type FieldInputTypes = FieldTypesFromDomain<
   FieldTypeOverrides,
   'input'
 >;
-type ColumnTypeOverrides = {};
+type ColumnTypeOverrides = {
+  readonly public: {
+    readonly Game: {
+      readonly result: {
+        readonly output: 'WHITE_WINS' | 'BLACK_WINS' | 'DRAW';
+        readonly input: 'WHITE_WINS' | 'BLACK_WINS' | 'DRAW';
+      };
+      readonly status: {
+        readonly output: 'IN_PROGRESS' | 'COMPLETED' | 'ABANDONED' | 'TIME_UP' | 'PLAYER_EXIT';
+        readonly input: 'IN_PROGRESS' | 'COMPLETED' | 'ABANDONED' | 'TIME_UP' | 'PLAYER_EXIT';
+      };
+      readonly timeControl: {
+        readonly output: 'CLASSICAL' | 'RAPID' | 'BLITZ' | 'BULLET';
+        readonly input: 'CLASSICAL' | 'RAPID' | 'BLITZ' | 'BULLET';
+      };
+    };
+  };
+};
 export type StorageColumnTypes = ColumnTypesFromStorage<
   ContractBase['storage'],
   CodecTypes,
@@ -304,12 +340,13 @@ export type StorageColumnInputTypes = ColumnTypesFromStorage<
 export namespace Models {
   export type public_Game = {
     createdAt: FieldOutputTypes['public']['Game']['createdAt'];
+    endAt: FieldOutputTypes['public']['Game']['endAt'];
     id: FieldOutputTypes['public']['Game']['id'];
     player1Id: FieldOutputTypes['public']['Game']['player1Id'];
     player2Id: FieldOutputTypes['public']['Game']['player2Id'];
     result: FieldOutputTypes['public']['Game']['result'];
     status: FieldOutputTypes['public']['Game']['status'];
-    updatedAt: FieldOutputTypes['public']['Game']['updatedAt'];
+    timeControl: FieldOutputTypes['public']['Game']['timeControl'];
     moves: public_Move[];
     player1: public_User;
     player2: public_User;
@@ -377,6 +414,12 @@ type ContractBase = Omit<
                   readonly default: { readonly kind: 'function'; readonly expression: 'now()' };
                   readonly many: false;
                 };
+                readonly endAt: {
+                  readonly dataType: 'pg/timestamptz';
+                  readonly codecId: 'pg/timestamptz-string@1';
+                  readonly nullable: true;
+                  readonly many: false;
+                };
                 readonly id: {
                   readonly dataType: 'pg/int4';
                   readonly codecId: 'pg/int4@1';
@@ -411,14 +454,14 @@ type ContractBase = Omit<
                   readonly nullable: false;
                   readonly default: {
                     readonly kind: 'literal';
-                    readonly value: DefaultLiteralValue<'pg/text@1', 'ONGOING'>;
+                    readonly value: DefaultLiteralValue<'pg/text@1', 'IN_PROGRESS'>;
                   };
                   readonly many: false;
                 };
-                readonly updatedAt: {
-                  readonly dataType: 'pg/timestamptz';
-                  readonly codecId: 'pg/timestamptz-string@1';
-                  readonly nullable: false;
+                readonly timeControl: {
+                  readonly dataType: 'pg/text';
+                  readonly codecId: 'pg/text@1';
+                  readonly nullable: true;
                   readonly many: false;
                 };
               };
@@ -618,6 +661,26 @@ type ContractBase = Omit<
               foreignKeys: readonly [];
             };
           };
+          readonly valueSet: {
+            readonly GameResult: {
+              readonly kind: 'valueSet';
+              readonly values: readonly ['WHITE_WINS', 'BLACK_WINS', 'DRAW'];
+            };
+            readonly GameStatus: {
+              readonly kind: 'valueSet';
+              readonly values: readonly [
+                'IN_PROGRESS',
+                'COMPLETED',
+                'ABANDONED',
+                'TIME_UP',
+                'PLAYER_EXIT',
+              ];
+            };
+            readonly TimeControl: {
+              readonly kind: 'valueSet';
+              readonly values: readonly ['CLASSICAL', 'RAPID', 'BLITZ', 'BULLET'];
+            };
+          };
         };
       };
     };
@@ -645,6 +708,13 @@ type ContractBase = Omit<
                   readonly codecId: 'pg/timestamptz-string@1';
                 };
               };
+              readonly endAt: {
+                readonly nullable: true;
+                readonly type: {
+                  readonly kind: 'scalar';
+                  readonly codecId: 'pg/timestamptz-string@1';
+                };
+              };
               readonly id: {
                 readonly nullable: false;
                 readonly type: { readonly kind: 'scalar'; readonly codecId: 'pg/int4@1' };
@@ -665,12 +735,9 @@ type ContractBase = Omit<
                 readonly nullable: false;
                 readonly type: { readonly kind: 'scalar'; readonly codecId: 'pg/text@1' };
               };
-              readonly updatedAt: {
-                readonly nullable: false;
-                readonly type: {
-                  readonly kind: 'scalar';
-                  readonly codecId: 'pg/timestamptz-string@1';
-                };
+              readonly timeControl: {
+                readonly nullable: true;
+                readonly type: { readonly kind: 'scalar'; readonly codecId: 'pg/text@1' };
               };
             };
             readonly relations: {
@@ -706,12 +773,13 @@ type ContractBase = Omit<
               readonly namespaceId: 'public';
               readonly fields: {
                 readonly createdAt: { readonly column: 'createdAt' };
+                readonly endAt: { readonly column: 'endAt' };
                 readonly id: { readonly column: 'id' };
                 readonly player1Id: { readonly column: 'player1Id' };
                 readonly player2Id: { readonly column: 'player2Id' };
                 readonly result: { readonly column: 'result' };
                 readonly status: { readonly column: 'status' };
-                readonly updatedAt: { readonly column: 'updatedAt' };
+                readonly timeControl: { readonly column: 'timeControl' };
               };
             };
           };
@@ -855,6 +923,55 @@ type ContractBase = Omit<
             };
           };
         };
+        readonly enum: {
+          readonly GameResult: {
+            readonly codecId: 'pg/text@1';
+            readonly members: readonly [
+              { readonly name: 'WHITE_WINS'; readonly value: 'WHITE_WINS' },
+              { readonly name: 'BLACK_WINS'; readonly value: 'BLACK_WINS' },
+              { readonly name: 'DRAW'; readonly value: 'DRAW' },
+            ];
+          };
+          readonly GameStatus: {
+            readonly codecId: 'pg/text@1';
+            readonly members: readonly [
+              { readonly name: 'IN_PROGRESS'; readonly value: 'IN_PROGRESS' },
+              { readonly name: 'COMPLETED'; readonly value: 'COMPLETED' },
+              { readonly name: 'ABANDONED'; readonly value: 'ABANDONED' },
+              { readonly name: 'TIME_UP'; readonly value: 'TIME_UP' },
+              { readonly name: 'PLAYER_EXIT'; readonly value: 'PLAYER_EXIT' },
+            ];
+          };
+          readonly TimeControl: {
+            readonly codecId: 'pg/text@1';
+            readonly members: readonly [
+              { readonly name: 'CLASSICAL'; readonly value: 'CLASSICAL' },
+              { readonly name: 'RAPID'; readonly value: 'RAPID' },
+              { readonly name: 'BLITZ'; readonly value: 'BLITZ' },
+              { readonly name: 'BULLET'; readonly value: 'BULLET' },
+            ];
+          };
+        };
+        readonly enumMemberTypes?: {
+          readonly GameResult: readonly [
+            { readonly name: 'WHITE_WINS'; readonly value: 'WHITE_WINS' },
+            { readonly name: 'BLACK_WINS'; readonly value: 'BLACK_WINS' },
+            { readonly name: 'DRAW'; readonly value: 'DRAW' },
+          ];
+          readonly GameStatus: readonly [
+            { readonly name: 'IN_PROGRESS'; readonly value: 'IN_PROGRESS' },
+            { readonly name: 'COMPLETED'; readonly value: 'COMPLETED' },
+            { readonly name: 'ABANDONED'; readonly value: 'ABANDONED' },
+            { readonly name: 'TIME_UP'; readonly value: 'TIME_UP' },
+            { readonly name: 'PLAYER_EXIT'; readonly value: 'PLAYER_EXIT' },
+          ];
+          readonly TimeControl: readonly [
+            { readonly name: 'CLASSICAL'; readonly value: 'CLASSICAL' },
+            { readonly name: 'RAPID'; readonly value: 'RAPID' },
+            { readonly name: 'BLITZ'; readonly value: 'BLITZ' },
+            { readonly name: 'BULLET'; readonly value: 'BULLET' },
+          ];
+        };
       };
     };
   };
@@ -890,15 +1007,6 @@ type ContractBase = Omit<
     readonly executionHash: ExecutionHash;
     readonly mutations: {
       readonly defaults: readonly [
-        {
-          readonly onCreate: { readonly id: 'timestamptzStringNow'; readonly kind: 'generator' };
-          readonly onUpdate: { readonly id: 'timestamptzStringNow'; readonly kind: 'generator' };
-          readonly ref: {
-            readonly entry: 'Game';
-            readonly field: 'updatedAt';
-            readonly namespace: 'public';
-          };
-        },
         {
           readonly onCreate: { readonly id: 'uuidv4'; readonly kind: 'generator' };
           readonly ref: {

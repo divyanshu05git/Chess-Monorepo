@@ -1,7 +1,7 @@
-import { useEffect, useState ,useRef} from "react";
+import { useEffect, useState,useRef} from "react";
 import { ChessBoard } from "../components/ChessBoard";
 import { useSocket } from "../hooks/useSocket";
-import { Chess,type Color } from "chess.js";
+import { Chess,Move,type Color } from "chess.js";
 import { useNavigate } from "react-router";
 import { useParams } from "react-router";
 
@@ -9,17 +9,19 @@ import { useParams } from "react-router";
 export const INIT_GAME="init_game"
 export const MOVE="move"
 export const GAME_OVER="game_over"
-export const RESUME_GAME="resume_game"
+export const JOIN_GAME="join_game"
 
 export const GamePath = () => {
   const socket=useSocket();
   const navigate=useNavigate();
-  const {gameId}=useParams<{gameId:string}>()
+  let {gameId}=useParams<{gameId:string}>()
 
   const [chess,setChess]=useState(()=>new Chess())
   const [board,setBoard]=useState(chess.board())
   const [myColor,setMyColor]=useState<Color | null>(null)
   const [started,setStarted]=useState(false);
+  const [moves,setMoves]=useState<Move[]>([]);
+  const initialGameId = useRef(gameId);
 
 
   useEffect(()=>{
@@ -27,7 +29,7 @@ export const GamePath = () => {
 
     socket.onmessage=(event)=>{
       const message=JSON.parse(event.data);
-      console.log("message")
+      console.log("message",message)
 
       switch(message.type){
         case INIT_GAME:
@@ -35,25 +37,64 @@ export const GamePath = () => {
           setStarted(true);
           setMyColor(message.payload.color === "black" ? "b" : "w")
           setBoard(chess.board())
+          setMoves([])
 
-          if (gameId) {
+          gameId=message.payload.gameId
+          if (gameId) {   
             navigate(`/game/${gameId}`);
           }
-
           break
+        
 
         case MOVE:
-          const move=message.payload
-          chess.move(move);
+          const currMove=message.payload
+          setMoves([...moves, currMove])
+          // setMoves(prev => [...prev, currMove])
+          chess.move(currMove);
           setBoard(chess.board())
           break
+        
 
+        case JOIN_GAME:
+          console.log("JOIN_GAME case executed");
+          console.log("Payload:", message.payload);
+
+          if (!Array.isArray(message.payload.moves)) break;
+          chess.reset();
+
+          const restoredMoves=message.payload.moves;
+          for(const move of restoredMoves){
+            chess.move(move);
+          }
+
+          setBoard(chess.board());
+          setMoves(restoredMoves);
+          setStarted(true);
+
+          gameId=(message.payload.gameId);
+          setMyColor(message.payload.color === "black" ? "b" : "w");
+          break;
+          
+        
         case GAME_OVER:
           setStarted(false)
           break
       }
     }
   },[socket,navigate])
+
+  useEffect(() => {
+      if (!socket || !initialGameId.current) return;
+
+      if (socket.readyState !== WebSocket.OPEN) return;
+
+      socket.send(JSON.stringify({
+          type: JOIN_GAME,
+          payload: {
+              gameId: Number(gameId)
+          }
+      }));
+  }, [socket, gameId]);
 
 
   if(!socket) return <div>Connecting.....</div>

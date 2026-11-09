@@ -1,0 +1,49 @@
+[
+  {
+    "id": "alterNullability.dropNotNull.Game.timeControl",
+    "label": "Drop NOT NULL on \"Game\".\"timeControl\"",
+    "operationClass": "widening",
+    "target": {
+      "id": "postgres",
+      "details": {
+        "schema": "public",
+        "objectType": "column",
+        "name": "timeControl",
+        "table": "Game"
+      }
+    },
+    "precheck": [
+      {
+        "description": "ensure column \"timeControl\" exists",
+        "sql": "SELECT EXISTS (SELECT 1 AS \"one\" FROM \"information_schema\".\"columns\" WHERE (\"table_schema\" = $1 AND \"table_name\" = $2 AND \"column_name\" = $3)) AS \"result\"",
+        "params": [
+          "public",
+          "Game",
+          "timeControl"
+        ],
+        "expectation": {
+          "expects": "present",
+          "object": "column \"timeControl\" on \"Game\""
+        }
+      }
+    ],
+    "execute": [
+      {
+        "description": "drop NOT NULL on \"timeControl\"",
+        "sql": "ALTER TABLE \"public\".\"Game\" ALTER COLUMN \"timeControl\" DROP NOT NULL"
+      }
+    ],
+    "postcheck": [
+      {
+        "description": "verify column \"timeControl\" is nullable",
+        "sql": "SELECT EXISTS (SELECT 1 AS \"one\" FROM \"information_schema\".\"columns\" WHERE (\"table_schema\" = $1 AND \"table_name\" = $2 AND \"column_name\" = $3 AND \"is_nullable\" = $4)) AS \"result\"",
+        "params": [
+          "public",
+          "Game",
+          "timeControl",
+          "YES"
+        ]
+      }
+    ]
+  }
+]

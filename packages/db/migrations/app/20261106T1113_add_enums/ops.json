@@ -1,0 +1,372 @@
+[
+  {
+    "id": "dropColumn.Game.updatedAt",
+    "label": "Drop column \"updatedAt\" from \"Game\"",
+    "operationClass": "destructive",
+    "target": {
+      "id": "postgres",
+      "details": {
+        "schema": "public",
+        "objectType": "column",
+        "name": "updatedAt",
+        "table": "Game"
+      }
+    },
+    "precheck": [
+      {
+        "description": "ensure column \"updatedAt\" exists",
+        "sql": "SELECT EXISTS (SELECT 1 AS \"one\" FROM \"information_schema\".\"columns\" WHERE (\"table_schema\" = $1 AND \"table_name\" = $2 AND \"column_name\" = $3)) AS \"result\"",
+        "params": [
+          "public",
+          "Game",
+          "updatedAt"
+        ],
+        "expectation": {
+          "expects": "present",
+          "object": "column \"updatedAt\" on \"Game\""
+        }
+      }
+    ],
+    "execute": [
+      {
+        "description": "drop column \"updatedAt\"",
+        "sql": "ALTER TABLE \"public\".\"Game\" DROP COLUMN \"updatedAt\""
+      }
+    ],
+    "postcheck": [
+      {
+        "description": "verify column \"updatedAt\" does not exist",
+        "sql": "SELECT NOT EXISTS (SELECT 1 AS \"one\" FROM \"information_schema\".\"columns\" WHERE (\"table_schema\" = $1 AND \"table_name\" = $2 AND \"column_name\" = $3)) AS \"result\"",
+        "params": [
+          "public",
+          "Game",
+          "updatedAt"
+        ],
+        "expectation": {
+          "expects": "absent",
+          "object": "column \"updatedAt\" on \"Game\""
+        }
+      }
+    ]
+  },
+  {
+    "id": "column.public.Game.endAt",
+    "label": "Add column \"endAt\" to \"Game\"",
+    "operationClass": "additive",
+    "target": {
+      "id": "postgres",
+      "details": {
+        "schema": "public",
+        "objectType": "column",
+        "name": "endAt",
+        "table": "Game"
+      }
+    },
+    "precheck": [
+      {
+        "description": "ensure column \"endAt\" is missing",
+        "sql": "SELECT NOT EXISTS (SELECT 1 AS \"one\" FROM \"information_schema\".\"columns\" WHERE (\"table_schema\" = $1 AND \"table_name\" = $2 AND \"column_name\" = $3)) AS \"result\"",
+        "params": [
+          "public",
+          "Game",
+          "endAt"
+        ],
+        "expectation": {
+          "expects": "absent",
+          "object": "column \"endAt\" on \"Game\""
+        }
+      }
+    ],
+    "execute": [
+      {
+        "description": "add column \"endAt\"",
+        "sql": "ALTER TABLE \"public\".\"Game\" ADD COLUMN \"endAt\" timestamptz"
+      }
+    ],
+    "postcheck": [
+      {
+        "description": "verify column \"endAt\" exists",
+        "sql": "SELECT EXISTS (SELECT 1 AS \"one\" FROM \"information_schema\".\"columns\" WHERE (\"table_schema\" = $1 AND \"table_name\" = $2 AND \"column_name\" = $3)) AS \"result\"",
+        "params": [
+          "public",
+          "Game",
+          "endAt"
+        ],
+        "expectation": {
+          "expects": "present",
+          "object": "column \"endAt\" on \"Game\""
+        }
+      },
+      {
+        "description": "verify column \"endAt\" has type \"timestamp with time zone\"",
+        "sql": "SELECT EXISTS (SELECT 1 AS \"one\" FROM \"pg_attribute\" AS \"a\" INNER JOIN \"pg_class\" AS \"c\" ON \"c\".\"oid\" = \"a\".\"attrelid\" INNER JOIN \"pg_namespace\" AS \"n\" ON \"n\".\"oid\" = \"c\".\"relnamespace\" WHERE (\"n\".\"nspname\" = $1 AND \"c\".\"relname\" = $2 AND \"a\".\"attname\" = $3 AND (format_type(\"a\".\"atttypid\", \"a\".\"atttypmod\")) = $4 AND NOT (\"a\".\"attisdropped\"))) AS \"result\"",
+        "params": [
+          "public",
+          "Game",
+          "endAt",
+          "timestamp with time zone"
+        ]
+      }
+    ]
+  },
+  {
+    "id": "setDefault.Game.status",
+    "label": "Set default on \"Game\".\"status\"",
+    "operationClass": "widening",
+    "target": {
+      "id": "postgres",
+      "details": {
+        "schema": "public",
+        "objectType": "column",
+        "name": "status",
+        "table": "Game"
+      }
+    },
+    "precheck": [
+      {
+        "description": "ensure column \"status\" exists",
+        "sql": "SELECT EXISTS (SELECT 1 AS \"one\" FROM \"information_schema\".\"columns\" WHERE (\"table_schema\" = $1 AND \"table_name\" = $2 AND \"column_name\" = $3)) AS \"result\"",
+        "params": [
+          "public",
+          "Game",
+          "status"
+        ],
+        "expectation": {
+          "expects": "present",
+          "object": "column \"status\" on \"Game\""
+        }
+      }
+    ],
+    "execute": [
+      {
+        "description": "set default on \"status\"",
+        "sql": "ALTER TABLE \"public\".\"Game\" ALTER COLUMN \"status\" SET DEFAULT 'IN_PROGRESS'"
+      }
+    ],
+    "postcheck": []
+  },
+  {
+    "id": "column.Game.timeControl",
+    "label": "Add column timeControl to Game",
+    "summary": "Adds column timeControl to table Game",
+    "operationClass": "additive",
+    "target": {
+      "id": "postgres",
+      "details": {
+        "schema": "public",
+        "objectType": "column",
+        "name": "timeControl",
+        "table": "Game"
+      }
+    },
+    "precheck": [
+      {
+        "description": "ensure column \"timeControl\" is missing",
+        "sql": "SELECT NOT EXISTS (SELECT 1 AS \"one\" FROM \"information_schema\".\"columns\" WHERE (\"table_schema\" = $1 AND \"table_name\" = $2 AND \"column_name\" = $3)) AS \"result\"",
+        "params": [
+          "public",
+          "Game",
+          "timeControl"
+        ],
+        "expectation": {
+          "expects": "absent",
+          "object": "column \"timeControl\" on \"Game\""
+        }
+      },
+      {
+        "description": "ensure table \"Game\" is empty before adding NOT NULL column without default",
+        "sql": "SELECT NOT EXISTS (SELECT 1 AS \"one\" FROM \"public\".\"Game\" LIMIT 1) AS \"result\"",
+        "params": [],
+        "meta": {
+          "requiredColumn": {
+            "table": "Game",
+            "column": "timeControl",
+            "reason": "newField"
+          }
+        }
+      }
+    ],
+    "execute": [
+      {
+        "description": "add column \"timeControl\"",
+        "sql": "ALTER TABLE \"public\".\"Game\" ADD COLUMN \"timeControl\" text NOT NULL"
+      }
+    ],
+    "postcheck": [
+      {
+        "description": "verify column \"timeControl\" exists",
+        "sql": "SELECT EXISTS (SELECT 1 AS \"one\" FROM \"information_schema\".\"columns\" WHERE (\"table_schema\" = $1 AND \"table_name\" = $2 AND \"column_name\" = $3)) AS \"result\"",
+        "params": [
+          "public",
+          "Game",
+          "timeControl"
+        ],
+        "expectation": {
+          "expects": "present",
+          "object": "column \"timeControl\" on \"Game\""
+        }
+      },
+      {
+        "description": "verify column \"timeControl\" is NOT NULL",
+        "sql": "SELECT EXISTS (SELECT 1 AS \"one\" FROM \"information_schema\".\"columns\" WHERE (\"table_schema\" = $1 AND \"table_name\" = $2 AND \"column_name\" = $3 AND \"is_nullable\" = $4)) AS \"result\"",
+        "params": [
+          "public",
+          "Game",
+          "timeControl",
+          "NO"
+        ]
+      },
+      {
+        "description": "verify column \"timeControl\" has type \"text\"",
+        "sql": "SELECT EXISTS (SELECT 1 AS \"one\" FROM \"pg_attribute\" AS \"a\" INNER JOIN \"pg_class\" AS \"c\" ON \"c\".\"oid\" = \"a\".\"attrelid\" INNER JOIN \"pg_namespace\" AS \"n\" ON \"n\".\"oid\" = \"c\".\"relnamespace\" WHERE (\"n\".\"nspname\" = $1 AND \"c\".\"relname\" = $2 AND \"a\".\"attname\" = $3 AND (format_type(\"a\".\"atttypid\", \"a\".\"atttypmod\")) = $4 AND NOT (\"a\".\"attisdropped\"))) AS \"result\"",
+        "params": [
+          "public",
+          "Game",
+          "timeControl",
+          "text"
+        ]
+      }
+    ]
+  },
+  {
+    "id": "checkConstraint.Game.Game_result_check_df6ba410",
+    "label": "Add check constraint \"Game_result_check_df6ba410\" on \"Game\"",
+    "operationClass": "additive",
+    "target": {
+      "id": "postgres",
+      "details": {
+        "schema": "public",
+        "objectType": "checkConstraint",
+        "name": "Game_result_check_df6ba410",
+        "table": "Game"
+      }
+    },
+    "precheck": [
+      {
+        "description": "ensure constraint \"Game_result_check_df6ba410\" does not exist",
+        "sql": "SELECT NOT EXISTS (SELECT 1 AS \"one\" FROM \"pg_constraint\" AS \"c\" INNER JOIN \"pg_namespace\" AS \"n\" ON \"n\".\"oid\" = \"c\".\"connamespace\" WHERE (\"c\".\"conname\" = $1 AND \"n\".\"nspname\" = $2 AND \"c\".\"conrelid\" = to_regclass($3))) AS \"result\"",
+        "params": [
+          "Game_result_check_df6ba410",
+          "public",
+          "\"public\".\"Game\""
+        ],
+        "expectation": {
+          "expects": "absent",
+          "object": "constraint \"Game_result_check_df6ba410\" on \"Game\""
+        }
+      }
+    ],
+    "execute": [
+      {
+        "description": "add check constraint \"Game_result_check_df6ba410\"",
+        "sql": "ALTER TABLE \"public\".\"Game\" ADD CONSTRAINT \"Game_result_check_df6ba410\" CHECK (\"result\" IN ('WHITE_WINS', 'BLACK_WINS', 'DRAW'))"
+      }
+    ],
+    "postcheck": [
+      {
+        "description": "verify check constraint \"Game_result_check_df6ba410\" exists",
+        "sql": "SELECT EXISTS (SELECT 1 AS \"one\" FROM \"pg_constraint\" AS \"c\" INNER JOIN \"pg_namespace\" AS \"n\" ON \"n\".\"oid\" = \"c\".\"connamespace\" WHERE (\"c\".\"conname\" = $1 AND \"n\".\"nspname\" = $2 AND \"c\".\"conrelid\" = to_regclass($3) AND \"c\".\"contype\" = $4)) AS \"result\"",
+        "params": [
+          "Game_result_check_df6ba410",
+          "public",
+          "\"public\".\"Game\"",
+          "c"
+        ]
+      }
+    ]
+  },
+  {
+    "id": "checkConstraint.Game.Game_status_check_803570ff",
+    "label": "Add check constraint \"Game_status_check_803570ff\" on \"Game\"",
+    "operationClass": "additive",
+    "target": {
+      "id": "postgres",
+      "details": {
+        "schema": "public",
+        "objectType": "checkConstraint",
+        "name": "Game_status_check_803570ff",
+        "table": "Game"
+      }
+    },
+    "precheck": [
+      {
+        "description": "ensure constraint \"Game_status_check_803570ff\" does not exist",
+        "sql": "SELECT NOT EXISTS (SELECT 1 AS \"one\" FROM \"pg_constraint\" AS \"c\" INNER JOIN \"pg_namespace\" AS \"n\" ON \"n\".\"oid\" = \"c\".\"connamespace\" WHERE (\"c\".\"conname\" = $1 AND \"n\".\"nspname\" = $2 AND \"c\".\"conrelid\" = to_regclass($3))) AS \"result\"",
+        "params": [
+          "Game_status_check_803570ff",
+          "public",
+          "\"public\".\"Game\""
+        ],
+        "expectation": {
+          "expects": "absent",
+          "object": "constraint \"Game_status_check_803570ff\" on \"Game\""
+        }
+      }
+    ],
+    "execute": [
+      {
+        "description": "add check constraint \"Game_status_check_803570ff\"",
+        "sql": "ALTER TABLE \"public\".\"Game\" ADD CONSTRAINT \"Game_status_check_803570ff\" CHECK (\"status\" IN ('IN_PROGRESS', 'COMPLETED', 'ABANDONED', 'TIME_UP', 'PLAYER_EXIT'))"
+      }
+    ],
+    "postcheck": [
+      {
+        "description": "verify check constraint \"Game_status_check_803570ff\" exists",
+        "sql": "SELECT EXISTS (SELECT 1 AS \"one\" FROM \"pg_constraint\" AS \"c\" INNER JOIN \"pg_namespace\" AS \"n\" ON \"n\".\"oid\" = \"c\".\"connamespace\" WHERE (\"c\".\"conname\" = $1 AND \"n\".\"nspname\" = $2 AND \"c\".\"conrelid\" = to_regclass($3) AND \"c\".\"contype\" = $4)) AS \"result\"",
+        "params": [
+          "Game_status_check_803570ff",
+          "public",
+          "\"public\".\"Game\"",
+          "c"
+        ]
+      }
+    ]
+  },
+  {
+    "id": "checkConstraint.Game.Game_timeControl_check_3f660a42",
+    "label": "Add check constraint \"Game_timeControl_check_3f660a42\" on \"Game\"",
+    "operationClass": "additive",
+    "target": {
+      "id": "postgres",
+      "details": {
+        "schema": "public",
+        "objectType": "checkConstraint",
+        "name": "Game_timeControl_check_3f660a42",
+        "table": "Game"
+      }
+    },
+    "precheck": [
+      {
+        "description": "ensure constraint \"Game_timeControl_check_3f660a42\" does not exist",
+        "sql": "SELECT NOT EXISTS (SELECT 1 AS \"one\" FROM \"pg_constraint\" AS \"c\" INNER JOIN \"pg_namespace\" AS \"n\" ON \"n\".\"oid\" = \"c\".\"connamespace\" WHERE (\"c\".\"conname\" = $1 AND \"n\".\"nspname\" = $2 AND \"c\".\"conrelid\" = to_regclass($3))) AS \"result\"",
+        "params": [
+          "Game_timeControl_check_3f660a42",
+          "public",
+          "\"public\".\"Game\""
+        ],
+        "expectation": {
+          "expects": "absent",
+          "object": "constraint \"Game_timeControl_check_3f660a42\" on \"Game\""
+        }
+      }
+    ],
+    "execute": [
+      {
+        "description": "add check constraint \"Game_timeControl_check_3f660a42\"",
+        "sql": "ALTER TABLE \"public\".\"Game\" ADD CONSTRAINT \"Game_timeControl_check_3f660a42\" CHECK (\"timeControl\" IN ('CLASSICAL', 'RAPID', 'BLITZ', 'BULLET'))"
+      }
+    ],
+    "postcheck": [
+      {
+        "description": "verify check constraint \"Game_timeControl_check_3f660a42\" exists",
+        "sql": "SELECT EXISTS (SELECT 1 AS \"one\" FROM \"pg_constraint\" AS \"c\" INNER JOIN \"pg_namespace\" AS \"n\" ON \"n\".\"oid\" = \"c\".\"connamespace\" WHERE (\"c\".\"conname\" = $1 AND \"n\".\"nspname\" = $2 AND \"c\".\"conrelid\" = to_regclass($3) AND \"c\".\"contype\" = $4)) AS \"result\"",
+        "params": [
+          "Game_timeControl_check_3f660a42",
+          "public",
+          "\"public\".\"Game\"",
+          "c"
+        ]
+      }
+    ]
+  }
+]

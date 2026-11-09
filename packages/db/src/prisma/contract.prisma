@@ -21,9 +21,10 @@ model Game {
   player2   User     @relation("player2",fields: [player2Id], references: [id])
   moves     Move[]   
   createdAt TimestamptzString @default(now())
-  updatedAt temporal.UpdatedAtString
-  result    String?   
-  status    String   @default("ONGOING")
+  endAt     TimestamptzString?
+  result    GameResult?
+  status    GameStatus @default(IN_PROGRESS)
+  timeControl   TimeControl?
 }
 
 model Move{
@@ -38,4 +39,25 @@ model Move{
   moveNumber Int
 
   @@unique([gameId, moveNumber])
+}
+
+enum GameStatus {
+  IN_PROGRESS
+  COMPLETED
+  ABANDONED
+  TIME_UP
+  PLAYER_EXIT
+}
+
+enum GameResult {
+  WHITE_WINS
+  BLACK_WINS
+  DRAW
+}
+
+enum TimeControl {
+  CLASSICAL
+  RAPID
+  BLITZ
+  BULLET
 }

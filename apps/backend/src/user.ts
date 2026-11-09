@@ -3,7 +3,7 @@ import { db } from "@repo/db";
 type GoogleProfile = {
   googleId: string;
   email: string;
-  name: string | undefined;
+  name: string | undefined
 };
 
 export async function findOrCreateUser(input: GoogleProfile) {
@@ -16,7 +16,8 @@ export async function findOrCreateUser(input: GoogleProfile) {
   try {
     return await db.orm.public.User.create({
       email: input.email,
-      googleId: input.googleId
+      googleId: input.googleId,
+      ...(input.name !== undefined && { name: input.name })
     });
   } catch (err) {
     // two first-time logins at the same moment: the other request won

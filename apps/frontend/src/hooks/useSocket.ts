@@ -7,6 +7,7 @@ export const useSocket =()=>{
     useEffect(()=>{
 
         const token=localStorage.getItem("token")
+        console.log("Token used by WebSocket:", token);
 
         if(!token){
             console.error("JWT token not found")

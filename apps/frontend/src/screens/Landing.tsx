@@ -1,13 +1,25 @@
 import { useNavigate } from "react-router"
 import GoogleLoginButton from "../components/GoogleLoginButton";
+import { useState } from "react";
 
 export const Landing=()=>{
     const navigate=useNavigate();
+    const [user, setUser] = useState(() => {
+      const storedUser = localStorage.getItem("user");
+      return storedUser ? JSON.parse(storedUser) : null;
+  });
     return (
         <main className="min-h-screen bg-white text-[#171717]">
           <div className="absolute top-6 right-6 z-10">
-          <GoogleLoginButton />
-        </div>
+          {/* <GoogleLoginButton /> */}
+          {user ? (
+            <h2 className="font-semibold text-lg">
+              Welcome, {user.name || "Player"}!
+            </h2>
+          ) : (
+            <GoogleLoginButton />
+          )}
+          </div>
       <div className="mx-auto flex min-h-screen max-w-6xl items-center px-6 py-12">
         <section className="grid w-full items-center gap-12 md:grid-cols-2 md:gap-20">
 

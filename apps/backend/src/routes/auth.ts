@@ -38,7 +38,7 @@ authRouter.post("/google", async (req, res) => {
 
     // 3. Give the browser your own token, valid for 7 days
     const token = jwt.sign({ sub: user.id }, JWT_SECRET, { expiresIn: "7d" });
-    res.json({ token, user: { id: user.id, name: user.name } });
+    res.json({ token, user: { id: user.id, name: user.name || p.name} });
   } catch(err) {
     console.error("auth/google failed:", err);
     res.status(401).json({ error: "Invalid token" });
