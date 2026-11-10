@@ -4,12 +4,18 @@ import { useSocket } from "../hooks/useSocket";
 import { Chess,Move,type Color } from "chess.js";
 import { useNavigate } from "react-router";
 import { useParams } from "react-router";
+import { PlayerAvatar } from "../components/PlayerAvatar";
 
 
 export const INIT_GAME="init_game"
 export const MOVE="move"
 export const GAME_OVER="game_over"
 export const JOIN_GAME="join_game"
+
+type AvatarProps={
+  name:string,
+  avatar?:string | null
+}
 
 export const GamePath = () => {
   const socket=useSocket();
@@ -22,6 +28,9 @@ export const GamePath = () => {
   const [started,setStarted]=useState(false);
   const [moves,setMoves]=useState<Move[]>([]);
   const initialGameId = useRef(gameId);
+
+  //avatar logic states 
+  const [players,setPlayers]=useState<{white:AvatarProps,black:AvatarProps}>({white:{name:"White",avatar:null},black:{name:"Black",avatar:null}})
 
 
   useEffect(()=>{
@@ -38,6 +47,17 @@ export const GamePath = () => {
           setMyColor(message.payload.color === "black" ? "b" : "w")
           setBoard(chess.board())
           setMoves([])
+
+          setPlayers({
+            white: {
+              name: message.payload.whitePlayer?.trim().split(/\s+/)[0] ?? "White",
+              avatar: message.payload.whitePlayerAvatar ?? null
+            },
+            black: {
+              name: message.payload.blackPlayer?.trim().split(/\s+/)[0] ?? "Black",
+              avatar: message.payload.blackPlayerAvatar ?? null
+            }
+          });
 
           gameId=message.payload.gameId
           if (gameId) {   
@@ -71,6 +91,17 @@ export const GamePath = () => {
           setMoves(restoredMoves);
           setStarted(true);
 
+          setPlayers({
+            white: {
+              name: message.payload.whitePlayer?.trim().split(/\s+/)[0] ?? "White",
+              avatar: message.payload.whitePlayerAvatar ?? null
+            },
+            black: {
+              name: message.payload.blackPlayer?.trim().split(/\s+/)[0] ?? "Black",
+              avatar: message.payload.blackPlayerAvatar ?? null
+            }
+          });
+
           gameId=(message.payload.gameId);
           setMyColor(message.payload.color === "black" ? "b" : "w");
           break;
@@ -99,11 +130,56 @@ export const GamePath = () => {
 
   if(!socket) return <div>Connecting.....</div>
 
+  const topPlayer = myColor === "w" ? players.black : players.white;
+  const bottomPlayer = myColor === "w" ? players.white : players.black;
+
   return (
    <div className="min-h-screen bg-[#262421] text-white flex flex-col justify-center items-center gap-6 p-4">
-  <div className="w-full max-w-[560px]">
-    <ChessBoard chess={chess} setBoard={setBoard} socket={socket} board={board} myColor={myColor} />
+
+
+  <div className="w-full max-w-[560px] flex flex-col gap-3">
+
+    {/* Opponent profile */}
+    <div className="flex items-center gap-3 px-2">
+      <PlayerAvatar
+        name={topPlayer.name}
+        avatar={topPlayer.avatar}
+        isOpponent={true}
+      />
+      <div className="font-semibold text-lg">
+        {topPlayer.name}
+        {/* <p className="text-sm text-gray-400 font-normal">
+          top
+        </p> */}
+      </div>
+    </div>
+
+    {/* Chessboard */}
+    <ChessBoard
+      chess={chess}
+      setBoard={setBoard}
+      socket={socket}
+      board={board}
+      myColor={myColor}
+    />
+
+    {/* Your profile */}
+    <div className="flex items-center gap-3 px-2">
+      <PlayerAvatar
+        name={bottomPlayer.name}
+        avatar={bottomPlayer.avatar}
+        isOpponent={false}
+      />
+      <div className="font-semibold text-lg">
+        {bottomPlayer.name}
+        {/* <p className="text-sm text-gray-400 font-normal">
+          You
+        </p> */}
+      </div>
+    </div>
+
   </div>
+
 
   {!started &&(
     <button

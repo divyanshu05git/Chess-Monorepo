@@ -33,6 +33,12 @@ export const ChessBoard = ({board , socket , setBoard ,chess,myColor}:{
     ) as Square;
 
     const isDark = (i + j) % 2 === 1;
+    const isMyturn=(chess.turn()===myColor)
+    const isSelected=(isMyturn && from===name)
+
+    const kingSquare=chess.board().flat().find(piece=>piece?.type==='k' && piece.color===chess.turn())?.square;
+    const isCheck=chess.isCheck() && isMyturn
+    const isKingInCheck=isCheck && name==kingSquare
 
     return (
       <div
@@ -72,9 +78,11 @@ export const ChessBoard = ({board , socket , setBoard ,chess,myColor}:{
 
           setFrom(null);
         }}
-        className={`relative flex items-center justify-center cursor-pointer overflow-hidden ${
-          isDark ? "bg-[#7cb342]" : "bg-[#b6e86a]"
-        }`}
+        className={`relative flex items-center justify-center cursor-pointer overflow-hidden 
+          ${isDark ? "bg-[#7cb342]" : "bg-[#b6e86a]"}
+          ${isSelected?"bg-blue-700/70" : ""}
+          ${isKingInCheck && !isSelected?"bg-red-500 animate-pulse" : ""}
+          `}
       >
         {j === 0 && (
           <span className="absolute top-0.5 left-1 text-xs font-bold opacity-60">

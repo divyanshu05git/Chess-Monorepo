@@ -43,6 +43,9 @@ export class Game{
                 a.moveNumber-b.moveNumber
             )
 
+            const whitePlayer=await db.orm.public.User.where({ id:this.player1.userId }).first();
+            const blackPlayer=await db.orm.public.User.where({ id:this.player2.userId }).first();
+
             console.log("2. Moves fetched:", moves.length);
 
             const isPlayer1 = this.player1.userId === userId;
@@ -56,7 +59,11 @@ export class Game{
                     currentPlayer: currentPlayer.userId,
                     opponent: opponent.userId,
                     moves: sortedMoves,
-                    status: "IN_PROGRESS"
+                    status: "IN_PROGRESS",
+                    whitePlayer:whitePlayer?.name,
+                    blackPlayer:blackPlayer?.name,
+                    whitePlayerAvatar: whitePlayer?.avatar ?? null,
+                    blackPlayerAvatar: blackPlayer?.avatar ?? null
                 }
             }))
             console.log("4. Response sent");
@@ -125,7 +132,9 @@ export class Game{
                     color:"white",
                     gameId:this.gameId,
                     whitePlayer:whitePlayer?.name,
-                    blackPlayer:blackPlayer?.name
+                    blackPlayer:blackPlayer?.name,
+                    whitePlayerAvatar: whitePlayer?.avatar ?? null,
+                    blackPlayerAvatar: blackPlayer?.avatar ?? null
                 }
             }))
         }
@@ -137,7 +146,9 @@ export class Game{
                     color:"black",
                     gameId:this.gameId,
                     whitePlayer:whitePlayer?.name,
-                    blackPlayer:blackPlayer?.name
+                    blackPlayer:blackPlayer?.name,
+                    whitePlayerAvatar: whitePlayer?.avatar ?? null,
+                    blackPlayerAvatar: blackPlayer?.avatar ?? null
                 }
             }))
         }

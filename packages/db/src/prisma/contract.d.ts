@@ -23,7 +23,7 @@ import type {
 } from '@prisma/orm-postgres/contract/types';
 
 export type StorageHash =
-  StorageHashBase<'fb8a208487f962ed183271302b03215b913a62a9a25b347adfdd009c0a37e0e4'>;
+  StorageHashBase<'3b6e254eaf6f85c9a620982a4e0d4d8d60cd4ed6cd25509ef50e8c630d3d1c20'>;
 export type ExecutionHash =
   ExecutionHashBase<'face4cf3e521c7a0aaa6b32e0a661c1a9f6e6d8a15491881a227d9359739b085'>;
 export type ProfileHash =
@@ -365,6 +365,7 @@ export namespace Models {
     readonly [RelationKeys]?: 'game' | 'player';
   };
   export type public_User = {
+    avatar: FieldOutputTypes['public']['User']['avatar'];
     createdAt: FieldOutputTypes['public']['User']['createdAt'];
     email: FieldOutputTypes['public']['User']['email'];
     googleId: FieldOutputTypes['public']['User']['googleId'];
@@ -602,6 +603,12 @@ type ContractBase = Omit<
             };
             readonly User: {
               columns: {
+                readonly avatar: {
+                  readonly dataType: 'pg/text';
+                  readonly codecId: 'pg/text@1';
+                  readonly nullable: true;
+                  readonly many: false;
+                };
                 readonly createdAt: {
                   readonly dataType: 'pg/timestamptz';
                   readonly codecId: 'pg/timestamptz-string@1';
@@ -850,6 +857,10 @@ type ContractBase = Omit<
           };
           readonly User: {
             readonly fields: {
+              readonly avatar: {
+                readonly nullable: true;
+                readonly type: { readonly kind: 'scalar'; readonly codecId: 'pg/text@1' };
+              };
               readonly createdAt: {
                 readonly nullable: false;
                 readonly type: {
@@ -911,6 +922,7 @@ type ContractBase = Omit<
               readonly table: 'User';
               readonly namespaceId: 'public';
               readonly fields: {
+                readonly avatar: { readonly column: 'avatar' };
                 readonly createdAt: { readonly column: 'createdAt' };
                 readonly email: { readonly column: 'email' };
                 readonly googleId: { readonly column: 'googleId' };
