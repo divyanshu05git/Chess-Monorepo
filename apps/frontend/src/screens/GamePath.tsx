@@ -5,6 +5,7 @@ import { Chess,Move,type Color } from "chess.js";
 import { useNavigate } from "react-router";
 import { useParams } from "react-router";
 import { PlayerAvatar } from "../components/PlayerAvatar";
+import { MoveHistory } from "../components/MoveHistory";
 
 
 export const INIT_GAME="init_game"
@@ -68,8 +69,8 @@ export const GamePath = () => {
 
         case MOVE:
           const currMove=message.payload
-          setMoves([...moves, currMove])
-          // setMoves(prev => [...prev, currMove])
+          // setMoves([...moves, currMove])
+          setMoves(prev => [...prev, currMove])
           chess.move(currMove);
           setBoard(chess.board())
           break
@@ -133,64 +134,60 @@ export const GamePath = () => {
   const topPlayer = myColor === "w" ? players.black : players.white;
   const bottomPlayer = myColor === "w" ? players.white : players.black;
 
-  return (
-   <div className="min-h-screen bg-[#262421] text-white flex flex-col justify-center items-center gap-6 p-4">
+return (
+  <div className="min-h-screen bg-[#101010] text-white flex justify-center items-center p-4">
+    <div className="w-full max-w-[960px] flex flex-col lg:flex-row items-center lg:items-start justify-center gap-6">
 
+      {/* Left: board column (always visible) */}
+      <div className="w-full max-w-[560px] flex flex-col gap-3">
 
-  <div className="w-full max-w-[560px] flex flex-col gap-3">
+        {started && (
+          <div className="flex items-center gap-3 px-2">
+            <PlayerAvatar
+              name={topPlayer.name}
+              avatar={topPlayer.avatar}
+              isOpponent={true}
+            />
+            <div className="font-semibold text-lg">{topPlayer.name}</div>
+          </div>
+        )}
 
-    {/* Opponent profile */}
-    <div className="flex items-center gap-3 px-2">
-      <PlayerAvatar
-        name={topPlayer.name}
-        avatar={topPlayer.avatar}
-        isOpponent={true}
-      />
-      <div className="font-semibold text-lg">
-        {topPlayer.name}
-        {/* <p className="text-sm text-gray-400 font-normal">
-          top
-        </p> */}
+        <ChessBoard
+          chess={chess}
+          setBoard={setBoard}
+          socket={socket}
+          board={board}
+          myColor={myColor}
+        />
+
+        {started && (
+          <div className="flex items-center gap-3 px-2">
+            <PlayerAvatar
+              name={bottomPlayer.name}
+              avatar={bottomPlayer.avatar}
+              isOpponent={false}
+            />
+            <div className="font-semibold text-lg">{bottomPlayer.name}</div>
+          </div>
+        )}
+
+        {!started && (
+          <button
+            className="w-full bg-[#81b64c] hover:bg-[#95c15f] font-bold text-2xl py-4 rounded-lg"
+            onClick={() => socket.send(JSON.stringify({ type: INIT_GAME }))}
+          >
+            Play
+          </button>
+        )}
       </div>
+
+      {/* Right: move history (only while a game is on) */}
+      {started && (
+        <div className="w-full max-w-[560px] lg:w-[350px] lg:max-w-none lg:self-center lg:max-h-[560px] lg:overflow-y-auto">
+          <MoveHistory moves={chess.history({ verbose: true })} />
+        </div>
+      )}
     </div>
-
-    {/* Chessboard */}
-    <ChessBoard
-      chess={chess}
-      setBoard={setBoard}
-      socket={socket}
-      board={board}
-      myColor={myColor}
-    />
-
-    {/* Your profile */}
-    <div className="flex items-center gap-3 px-2">
-      <PlayerAvatar
-        name={bottomPlayer.name}
-        avatar={bottomPlayer.avatar}
-        isOpponent={false}
-      />
-      <div className="font-semibold text-lg">
-        {bottomPlayer.name}
-        {/* <p className="text-sm text-gray-400 font-normal">
-          You
-        </p> */}
-      </div>
-    </div>
-
   </div>
-
-
-  {!started &&(
-    <button
-      className="w-full max-w-[560px] bg-[#81b64c] hover:bg-[#95c15f] font-bold text-2xl py-4 rounded-lg"
-      onClick={() => {
-        socket.send(JSON.stringify({ type: INIT_GAME }));
-      }}
-    >
-      Play
-    </button>
-  )}
-</div>
-  );
+);
 };
