@@ -11,12 +11,6 @@ import {  INIT_GAME,MOVE,GAME_OVER,EXIT_GAME,JOIN_GAME } from "../components/Mes
 import { ExitButton } from "../components/ExitButton";
 
 
-// export const INIT_GAME="init_game"
-// export const MOVE="move"
-// export const GAME_OVER="game_over"
-// export const JOIN_GAME="join_game"
-// export const EXIT_GAME = "exit_game"
-
 type AvatarProps={
   name:string,
   avatar?:string | null
