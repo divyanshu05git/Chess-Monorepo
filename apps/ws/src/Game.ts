@@ -18,6 +18,7 @@ export class Game{
     private movesCount:number
     private gameId:number
     private writeQueue:Promise<void>
+    private alreadyExit:boolean
 
     constructor(player1:Player,player2:Player,startTime:Date=new Date(),gameId:number=-1){
         this.player1=player1;
@@ -28,7 +29,38 @@ export class Game{
         this.movesCount=0;
         this.gameId=gameId
         this.writeQueue=Promise.resolve();
+        this.alreadyExit=false;
 
+    }
+
+    async exitGame(userId:string){
+        if(this.alreadyExit) return;
+
+        this.alreadyExit=true;
+        const leaver=this.player1.userId===userId?this.player1:this.player2;
+        const opponent=this.player1===leaver?this.player2:this.player1;
+
+        const result=leaver===this.player1?"black":"white"
+        leaver.socket?.send(JSON.stringify({
+            type:GAME_OVER,
+            payload:{result,reason:"you_exited"}
+        }))
+
+        opponent.socket?.send(JSON.stringify({
+            type:GAME_OVER,
+            payload:{result,reason:"opponent_exit"}
+        }))
+
+        try{
+            await this.writeQueue;
+            await db.orm.public.Game.where({id:this.gameId}).update({
+                result:result==="white"?"WHITE_WINS":"BLACK_WINS",
+                status:"ABANDONED"
+            })
+        }
+        catch(err){
+            console.log("Failed to save game after player exited",err);
+        }
     }
 
     async resumeGame(userId:string){
@@ -95,6 +127,8 @@ export class Game{
     }
 
     reconnectPlayer(userId:string,socket:WebSocket){
+        if(this.alreadyExit) return false;
+
         if(this.player1.userId===userId){
             this.player1.socket=socket;
             return true;
@@ -171,6 +205,8 @@ export class Game{
     }){
         
         if(this.player1.socket===user || this.player2.socket===user){
+
+            if(this.alreadyExit) return;
 
             //if player 2 is trying to move but its player 1's turn
             if(this.movesCount%2===0 && user!==this.player1.socket) return;

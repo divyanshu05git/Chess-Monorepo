@@ -1,7 +1,7 @@
 
 import { WebSocket } from "ws";
 import {Game} from "./Game.js";
-import { INIT_GAME,JOIN_GAME,MOVE } from "./messages.js";
+import { INIT_GAME,JOIN_GAME,MOVE,EXIT_GAME} from "./messages.js";
 import type { GameStatus, GameResult, TimeControl } from "@repo/common";
 import { db } from "@repo/db";
 
@@ -147,6 +147,21 @@ export class GameManager{
                     console.error("Error joining game:", err);
                 }
                 
+                
+            }
+            if(message.type===EXIT_GAME){
+                const gameId=Number(message.payload?.gameId);
+
+                const game=this.games.find(e=>e.getGameId()===gameId);
+                if(!game){
+                    console.log("game does not exist");
+                    return;
+                }
+
+                if(game.player1.userId===player.userId || game.player2.userId===player.userId){
+                    await game.exitGame(player.userId);
+                    this.games=this.games.filter(e=>e!==game);
+                }
             }
 
         })
