@@ -1,7 +1,7 @@
-import { useState } from 'react'
+
 import './App.css'
 import { BrowserRouter, Routes, Route } from "react-router";
-import { Landing } from './screens/landing';
+import { Landing } from './screens/Landing';
 import { GamePath } from './screens/GamePath';
 
 function App() {
