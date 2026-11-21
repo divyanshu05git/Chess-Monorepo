@@ -59,7 +59,7 @@ export const GamePath = () => {
   const handlePlayButton=()=>{
     setIsBotGame(false);   
     setWaiting(true);
-    socket.send(JSON.stringify({ type: INIT_GAME }))
+    socket?.send(JSON.stringify({ type: INIT_GAME }))
   }
 
   const handleExit=()=>{
