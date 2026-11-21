@@ -65,7 +65,7 @@ export const GamePath = () => {
   const handleExit=()=>{
     if(!window.confirm("Are you sure to exit the game")) return;
 
-    socket.send(JSON.stringify({
+    socket?.send(JSON.stringify({
       type:EXIT_GAME,
       payload:{gameId:Number(gameId)}
     }))
@@ -86,7 +86,7 @@ export const GamePath = () => {
     setLastBotLevel(level);
     setIsBotGame(true);
     setBotStarting(true);
-    socket.send(JSON.stringify({ type: INIT_BOT_GAME, payload: { level } }));
+    socket?.send(JSON.stringify({ type: INIT_BOT_GAME, payload: { level } }));
   };
 
   useEffect(()=>{
@@ -239,6 +239,7 @@ return (
           setBoard={setBoard}
           socket={socket}
           board={board}
+          //@ts-ignore
           myColor={myColor}
         />
 
