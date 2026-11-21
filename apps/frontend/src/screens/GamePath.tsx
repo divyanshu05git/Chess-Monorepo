@@ -22,10 +22,12 @@ export const GamePath = () => {
   const navigate=useNavigate();
   let {gameId}=useParams<{gameId:string}>()
 
+  // @ts-ignore
   const [chess,setChess]=useState(()=>new Chess())
   const [board,setBoard]=useState(chess.board())
   const [myColor,setMyColor]=useState<Color | null>(null)
   const [started,setStarted]=useState(false);
+  // @ts-ignore
   const [moves,setMoves]=useState<Move[]>([]);
   const initialGameId = useRef(gameId);
   const [waiting,setWaiting]=useState<boolean>(false);
@@ -89,6 +91,7 @@ export const GamePath = () => {
 
   useEffect(()=>{
     if(!socket) return;
+
 
     socket.onmessage=(event)=>{
       const message=JSON.parse(event.data);

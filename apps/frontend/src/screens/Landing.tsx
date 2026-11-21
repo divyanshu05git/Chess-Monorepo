@@ -5,6 +5,7 @@ import { WelcomeBadge } from "../components/WelcomeBadge";
 
 export const Landing=()=>{
     const navigate=useNavigate();
+    // @ts-ignore
     const [user, setUser] = useState(() => {
       const storedUser = localStorage.getItem("user");
       return storedUser ? JSON.parse(storedUser) : null;
