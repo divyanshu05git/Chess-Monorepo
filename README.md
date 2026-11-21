@@ -1,7 +1,7 @@
 ## Screenshots
 
 ### Landing Page
-![Landing Page]((./screenshots/landing.png))
+![Landing Page](https://github.com/divyanshu05git/Chess-Monorepo/blob/main/screenshots/landing.png)
 
 ### Play Options
 ![Play Options](./screenshots/playOptions.png)
