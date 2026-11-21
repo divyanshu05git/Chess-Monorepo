@@ -2,12 +2,17 @@ import { WebSocket } from "ws"
 import {Chess} from 'chess.js'
 import { GAME_OVER, INIT_GAME, MOVE, type MoveDb } from "./messages.js"
 import { db } from "@repo/db";
+import { getBotMove, isBotUserId, levelFromBotId , botName} from "./BotManager.js";
 
 
 type Player={
     userId:string,
     socket:WebSocket | null
 }
+
+type MoveInput={ from:string, to:string, promotion?:string }  
+const sleep=(ms:number)=>new Promise(r=>setTimeout(r,ms));      
+
 
 export class Game{
     public player1:Player
@@ -19,8 +24,9 @@ export class Game{
     private gameId:number
     private writeQueue:Promise<void>
     private alreadyExit:boolean
+    private botThinking:boolean
 
-    constructor(player1:Player,player2:Player,startTime:Date=new Date(),gameId:number=-1){
+    constructor(player1:Player ,player2:Player,startTime:Date=new Date(),gameId:number=-1){
         this.player1=player1;
         this.player2=player2;
         this.board=new Chess();
@@ -30,7 +36,38 @@ export class Game{
         this.gameId=gameId
         this.writeQueue=Promise.resolve();
         this.alreadyExit=false;
+        this.botThinking=false;
 
+        // makeMove finds the mover by socket, so a bot needs one. This stub receives sends and ignores them.
+        for(const p of [player1,player2]){
+            if(isBotUserId(p.userId)) p.socket={ send:()=>{}} as unknown as WebSocket;
+        }
+
+        
+
+    }
+
+    isPlayer2Bot():boolean{
+        return isBotUserId(this.player2.userId)
+    }
+
+    private isBot(player:Player):boolean{
+        return isBotUserId(player.userId)
+    }
+
+    isOver():boolean{
+        return this.alreadyExit || this.board.isGameOver()
+    }
+
+    playBotTurnIfNeeded(){
+        const mover=this.movesCount%2===0?this.player1:this.player2;
+        if(this.isBot(mover)) this.playBotMove(mover);
+    }
+
+    private async getPlayerInfo(userId:string){
+        if(isBotUserId(userId)) return { name:botName(userId), avatar:null };
+        const u=await db.orm.public.User.where({ id:userId }).first();
+        return { name:u?.name, avatar:u?.avatar ?? null };
     }
 
     async exitGame(userId:string){
@@ -75,8 +112,10 @@ export class Game{
                 a.moveNumber-b.moveNumber
             )
 
-            const whitePlayer=await db.orm.public.User.where({ id:this.player1.userId }).first();
-            const blackPlayer=await db.orm.public.User.where({ id:this.player2.userId }).first();
+            // const whitePlayer=await db.orm.public.User.where({ id:this.player1.userId }).first();
+            // const blackPlayer=await db.orm.public.User.where({ id:this.player2.userId }).first();
+            const whitePlayer=await this.getPlayerInfo(this.player1.userId);
+            const blackPlayer=await this.getPlayerInfo(this.player2.userId);
 
             console.log("2. Moves fetched:", moves.length);
 
@@ -156,8 +195,10 @@ export class Game{
             return;
         }
 
-        const whitePlayer=await db.orm.public.User.where({ id:this.player1.userId }).first();
-        const blackPlayer=await db.orm.public.User.where({ id:this.player2.userId }).first();
+        // const whitePlayer=await db.orm.public.User.where({ id:this.player1.userId }).first();
+        // const blackPlayer=await db.orm.public.User.where({ id:this.player2.userId }).first();
+        const whitePlayer=await this.getPlayerInfo(this.player1.userId);
+        const blackPlayer=await this.getPlayerInfo(this.player2.userId);
 
         if(this.player1){
             this.player1.socket?.send(JSON.stringify({
@@ -173,18 +214,23 @@ export class Game{
             }))
         }
 
-        if(this.player2){
-            this.player2.socket?.send(JSON.stringify({
-                type:INIT_GAME,
-                payload:{
-                    color:"black",
-                    gameId:this.gameId,
-                    whitePlayer:whitePlayer?.name,
-                    blackPlayer:blackPlayer?.name,
-                    whitePlayerAvatar: whitePlayer?.avatar ?? null,
-                    blackPlayerAvatar: blackPlayer?.avatar ?? null
-                }
-            }))
+        if(this.isPlayer2Bot()){
+            console.log("Bot game initialised")
+        }
+        else{
+            if(this.player2){
+                this.player2.socket?.send(JSON.stringify({
+                    type:INIT_GAME,
+                    payload:{
+                        color:"black",
+                        gameId:this.gameId,
+                        whitePlayer:whitePlayer?.name,
+                        blackPlayer:blackPlayer?.name,
+                        whitePlayerAvatar: whitePlayer?.avatar ?? null,
+                        blackPlayerAvatar: blackPlayer?.avatar ?? null
+                    }
+                }))
+            }
         }
     }
 
@@ -197,6 +243,55 @@ export class Game{
             console.log("Game created:", createGame.id);
             this.gameId=createGame.id
         
+    }
+
+    async playBotMove(bot:Player){
+        if(this.botThinking || this.alreadyExit || this.board.isGameOver()) return;
+
+        const level=levelFromBotId(bot.userId)
+        if(!level){
+            console.log("Level not defined")
+            return;
+        }
+
+        const botSocket=bot.socket;
+        if(!botSocket) return;
+
+        this.botThinking=true;
+        try{
+            const [bestMove]=await Promise.all([
+                getBotMove(this.board.fen(),level),
+                sleep(400)
+            ])
+
+            if(this.alreadyExit) return;
+
+            let move;
+            if(bestMove){
+                move={
+                    from:bestMove.slice(0,2),
+                    to:bestMove.slice(2,4),
+                }
+            }
+            else{
+                const legal=this.board.moves({verbose:true});
+                const pick=legal[Math.floor(Math.random()*legal.length)];
+                if(!pick) return;
+                move={
+                    from:pick.from,
+                    to:pick.to
+                };
+            }
+
+            await this.makeMove(botSocket,move)
+
+        }
+        catch(err){
+            console.log("Bot unable to play a move")
+        }
+        finally{
+            this.botThinking=false;
+        }
     }
 
     async makeMove(user:WebSocket,move:{

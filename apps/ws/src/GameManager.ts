@@ -1,9 +1,9 @@
-
 import { WebSocket } from "ws";
 import {Game} from "./Game.js";
-import { INIT_GAME,JOIN_GAME,MOVE,EXIT_GAME} from "./messages.js";
+import { INIT_GAME,JOIN_GAME,MOVE,EXIT_GAME,INIT_BOT_GAME} from "./messages.js";
 import type { GameStatus, GameResult, TimeControl } from "@repo/common";
 import { db } from "@repo/db";
+import { BOT_LEVELS, createBotUserId, isBotUserId, type BotLevel } from "./BotManager.js";
 
 type Player = {
     socket: WebSocket | null;
@@ -54,10 +54,10 @@ export class GameManager{
                 console.log("Message received:",data.toString());
                 
                 if(this.pendingUser!==null){
-                    // if (this.pendingUser?.userId === player.userId) {
-                    //     console.log("same players ")
-                    //     return;
-                    // }
+                    if (this.pendingUser?.userId === player.userId) {
+                        console.log("same players ")
+                        return;
+                    }
                     const game = new Game(this.pendingUser, player);
                     //start a game
                     try{
@@ -77,10 +77,56 @@ export class GameManager{
                 }
             }
 
+            if(message.type===INIT_BOT_GAME){
+                const level=message.payload?.level as BotLevel
+                if(!(level in BOT_LEVELS)){
+                    console.log("Bot level is not present")
+                    return;
+                }
+
+                const botGames=this.games.filter(e=>(isBotUserId(e.player1.userId) || isBotUserId(e.player2.userId)))
+                const presentGames=[];
+                for(let game of botGames){
+                    const gameInDb=await db.orm.public.Game.where({id:game.getGameId()}).all();
+        
+                    if(gameInDb.length>0 && gameInDb[0]?.status==='IN_PROGRESS'){
+                        presentGames.push(game);
+                    }
+                    
+                }
+
+                if(presentGames.length>=4){
+                    console.log("Too many bot games , wait for some time");
+                    user.send(JSON.stringify({
+                        type:"error",
+                        message:"BOT_BUSY"
+                    }))
+                    return;
+                }
+
+                if(this.pendingUser?.userId===player.userId) this.pendingUser=null;
+
+                const bot:Player={
+                    userId:createBotUserId(level),
+                    socket:null
+                }
+                const game=new Game(player,bot);
+
+                try{
+                    await game.createGameHandler();
+                    if(game.getGameId()==-1) return //game not created inside db
+                    this.games.push(game)
+                }
+                catch(err){
+                    console.log(err);
+                }
+            }
+
             if(message.type===MOVE){
                 const game=this.games.find(e=>e.player1.socket===user || e.player2.socket===user)
                 if(game){
                     game.makeMove(user,message.payload)
+                    game.playBotTurnIfNeeded()
                 }
             }
 
@@ -140,6 +186,7 @@ export class GameManager{
                     avlGame.seedMoves(sortedMoves);
                     this.games.push(avlGame);
                     await avlGame.resumeGame(player.userId)
+                    avlGame.playBotTurnIfNeeded();
 
                     console.log("Game restored ")
                 }

@@ -1,6 +1,7 @@
 import { useNavigate } from "react-router"
 import GoogleLoginButton from "../components/GoogleLoginButton";
 import { useState } from "react";
+import { WelcomeBadge } from "../components/WelcomeBadge";
 
 export const Landing=()=>{
     const navigate=useNavigate();
@@ -11,11 +12,8 @@ export const Landing=()=>{
     return (
         <main className="min-h-screen bg-white text-[#171717]">
           <div className="absolute top-6 right-6 z-10">
-          {/* <GoogleLoginButton /> */}
           {user ? (
-            <h2 className="font-semibold text-lg">
-              Welcome, {user.name || "Player"}!
-            </h2>
+            <WelcomeBadge name={user.name} avatar={user.avatar ?? user.picture} />
           ) : (
             <GoogleLoginButton />
           )}
@@ -52,8 +50,7 @@ export const Landing=()=>{
             </h1>
 
             <p className="mt-6 text-base leading-7 text-[#c2bdb2] sm:text-lg">
-              Challenge players online, sharpen your strategy, and
-              make every move count. Your next great game starts here.
+              Find an opponent, make your moves, and see how far your strategy takes you. Ready for a game?
             </p>
 
             {/* Stats */}
@@ -81,7 +78,7 @@ export const Landing=()=>{
 
               <span className="flex-1">
                 <span className="block text-xl font-bold sm:text-2xl">
-                  Play Online
+                  Start Playing
                 </span>
                 {/* <span className="mt-1 block text-sm text-white/85">
                   Play with someone at your level

@@ -7,8 +7,9 @@ import { useParams } from "react-router";
 import { PlayerAvatar } from "../components/PlayerAvatar";
 import { MoveHistory } from "../components/MoveHistory";
 import { GameOverCelebration ,type GameEnd} from "../components/GameOverCelebration";
-import {  INIT_GAME,MOVE,GAME_OVER,EXIT_GAME,JOIN_GAME } from "../components/Messages";
+import {  INIT_GAME,MOVE,GAME_OVER,EXIT_GAME,JOIN_GAME,INIT_BOT_GAME } from "../components/Messages";
 import { ExitButton } from "../components/ExitButton";
+import { BotLevel, type BotLevelId } from "../components/BotLevels";
 
 
 type AvatarProps={
@@ -43,6 +44,7 @@ export const GamePath = () => {
     draw: "Game drawn",
     you_exited: "you left the game",
     player_exit: "opponent left the game",
+    opponent_exit: "opponent left the game",
   };
 
   const parseGameEnd = (payload: any): GameEnd => {
@@ -53,6 +55,7 @@ export const GamePath = () => {
   };
 
   const handlePlayButton=()=>{
+    setIsBotGame(false);   
     setWaiting(true);
     socket.send(JSON.stringify({ type: INIT_GAME }))
   }
@@ -67,9 +70,22 @@ export const GamePath = () => {
   }
 
   useEffect(() => {
+    setBotStarting(false);
     setWaiting(false);        // a new socket means the old queue spot is gone
   }, [socket]);
 
+  const [botStarting, setBotStarting] = useState(false);   // stops a double click from creating two games
+  const [isBotGame, setIsBotGame] = useState(false);       // so Play Again restarts the right kind of game
+  const [showBotModal, setShowBotModal] = useState(false);
+  const [lastBotLevel, setLastBotLevel] = useState<BotLevelId>("medium");
+
+
+  const handlePlayBot = (level: BotLevelId) => {
+    setLastBotLevel(level);
+    setIsBotGame(true);
+    setBotStarting(true);
+    socket.send(JSON.stringify({ type: INIT_BOT_GAME, payload: { level } }));
+  };
 
   useEffect(()=>{
     if(!socket) return;
@@ -80,6 +96,8 @@ export const GamePath = () => {
 
       switch(message.type){
         case INIT_GAME:
+          setShowBotModal(false);     // new line
+          setBotStarting(false);
           setWaiting(false);
           chess.reset();
           setStarted(true);
@@ -116,6 +134,8 @@ export const GamePath = () => {
         
 
         case JOIN_GAME:
+          setBotStarting(false);
+          setIsBotGame(String(message.payload.opponent ?? "").startsWith("bot-"));
           setWaiting(false);
           console.log("JOIN_GAME case executed");
           console.log("Payload:", message.payload);
@@ -155,6 +175,14 @@ export const GamePath = () => {
         
         case EXIT_GAME:
           break;
+
+        case "error":
+          if (message.message === "BOT_BUSY") {
+            setBotStarting(false);
+            setIsBotGame(false);
+            window.alert("The bots are busy, try again in a minute");
+          }
+          break;
       }
     }
   },[socket,navigate])
@@ -171,7 +199,6 @@ export const GamePath = () => {
           }
       }));
   }, [socket, gameId]);
-
 
   if(!socket) return <div>Connecting.....</div>
 
@@ -223,7 +250,7 @@ return (
           </div>
         )}
         
-        {!started && (
+        {/* {!started && (
           <button
             onClick={handlePlayButton}
             disabled={waiting}
@@ -238,8 +265,36 @@ return (
               "Play"
             )}
           </button>
-        )}
+        )} */}
       </div>
+
+      {!started && (
+        <div className="w-full max-w-[560px] lg:w-[280px] lg:self-center flex flex-col gap-3">
+          <button
+            onClick={handlePlayButton}
+            disabled={waiting || botStarting}
+            className="w-full bg-[#81b64c] hover:bg-[#95c15f] disabled:hover:bg-[#81b64c] disabled:opacity-80 disabled:cursor-not-allowed font-bold text-2xl py-4 rounded-lg"
+          >
+            {waiting ? (
+              <span className="flex items-center justify-center gap-3">
+                <span className="w-6 h-6 border-4 border-white/40 border-t-white rounded-full animate-spin" />
+                Waiting for an opponent...
+              </span>
+            ) : (
+              "Play Online"
+            )}
+          </button>
+
+          <button
+            onClick={() => setShowBotModal(true)}
+            disabled={waiting || botStarting}
+            className="w-full flex items-center justify-center gap-3 bg-[#2e2e2e] hover:bg-[#3a3a3a] border border-[#444] disabled:opacity-60 disabled:cursor-not-allowed font-bold text-xl py-3.5 rounded-lg"
+          >
+            <span className="text-2xl">{"♞\uFE0E"}</span>
+            Play Computer
+          </button>
+        </div>
+      )}
 
       {/* Right: move history (only while a game is on) */}
       {started && (
@@ -255,13 +310,24 @@ return (
         end={gameEnd}
         myColor={myColor}
         onClose={() => setGameEnd(null)}
+        
         onPlayAgain={() => {
           setGameEnd(null);
-          // socket.send(JSON.stringify({ type: INIT_GAME }));
-          handlePlayButton();
+          if (isBotGame) handlePlayBot(lastBotLevel);   // same level as the last bot game
+          else handlePlayButton();
         }}
       />
     )}
+
+    {showBotModal && (
+      <BotLevel
+        initialLevel={lastBotLevel}
+        starting={botStarting}
+        onStart={handlePlayBot}
+        onClose={() => setShowBotModal(false)}
+      />
+    )}
+    
   </div>
 );
 };
