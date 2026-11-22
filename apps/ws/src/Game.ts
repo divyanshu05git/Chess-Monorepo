@@ -259,10 +259,12 @@ export class Game{
 
         this.botThinking=true;
         try{
+            const t0 = Date.now();
             const [bestMove]=await Promise.all([
                 getBotMove(this.board.fen(),level),
                 sleep(400)
             ])
+            console.log("bot ms:", Date.now() - t0);
 
             if(this.alreadyExit) return;
 
