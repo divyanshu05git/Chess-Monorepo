@@ -8,3 +8,9 @@
 
 ### Gameplay
 ![Gameplay](./screenshots/gameplay.png)
+
+## Run locally
+```bash
+npm install
+npm run dev
+```
