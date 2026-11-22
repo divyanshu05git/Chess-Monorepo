@@ -40,6 +40,8 @@ export class GameManager{
         if (this.pendingUser?.socket === user) {
             this.pendingUser = null;
         }
+
+
     }
 
     private addHandler(player:Player){
@@ -96,12 +98,18 @@ export class GameManager{
                 }
 
                 if(presentGames.length>=4){
-                    console.log("Too many bot games , wait for some time");
-                    user.send(JSON.stringify({
-                        type:"error",
-                        message:"BOT_BUSY"
-                    }))
-                    return;
+                    const oldestGame = presentGames.reduce((oldest, current) =>
+                        current.getStartTime() < oldest.getStartTime()
+                            ? current
+                            : oldest
+                    );
+
+                    // End and clean up the oldest game
+                    await oldestGame.exitGame(oldestGame.player1.userId);
+                    await oldestGame.cleanup();
+
+                    // Remove it from memory
+                    this.games = this.games.filter(game => game !== oldestGame);
                 }
 
                 if(this.pendingUser?.userId===player.userId) this.pendingUser=null;

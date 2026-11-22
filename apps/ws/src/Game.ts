@@ -64,6 +64,23 @@ export class Game{
         if(this.isBot(mover)) this.playBotMove(mover);
     }
 
+    getStartTime(){
+        return this.startTime
+    }
+
+    async cleanup() {
+        // Mark game as closed first
+        this.alreadyExit = true;
+
+        // Wait for any pending database writes
+        await this.writeQueue;
+
+        // Reset bot state
+        this.botThinking = false;
+
+        console.log(`Game ${this.gameId} cleaned up`);
+    }
+
     private async getPlayerInfo(userId:string){
         if(isBotUserId(userId)) return { name:botName(userId), avatar:null };
         const u=await db.orm.public.User.where({ id:userId }).first();
