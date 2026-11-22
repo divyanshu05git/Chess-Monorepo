@@ -3,7 +3,7 @@ import { GoogleLogin } from "@react-oauth/google";
 
 const API_URL = import.meta.env.VITE_API_URL;
 
-export default function GoogleLoginButton() {
+export default function GoogleLoginButton({ onSuccess }: { onSuccess?: () => void }) {
   return (
     <GoogleLogin
       onSuccess={async (response) => {
@@ -32,6 +32,8 @@ export default function GoogleLoginButton() {
           // This is your application's JWT, issued by your backend.
           localStorage.setItem("token", data.token);
           localStorage.setItem("user", JSON.stringify(data.user));
+          if (onSuccess) onSuccess();
+          else window.location.reload();
 
           console.log("Login successful", data.user);
           window.location.href = "/";

@@ -2,18 +2,25 @@ import { useNavigate } from "react-router"
 import GoogleLoginButton from "../components/GoogleLoginButton";
 import { useState } from "react";
 import { WelcomeBadge } from "../components/WelcomeBadge";
+import { isSignedIn } from "../auth";
 
 export const Landing=()=>{
     const navigate=useNavigate();
-    // @ts-ignore
-    const [user, setUser] = useState(() => {
+    const [user] = useState(() => {
       const storedUser = localStorage.getItem("user");
       return storedUser ? JSON.parse(storedUser) : null;
-  });
+    });
+
+    const signedIn = !!user && isSignedIn();
+    const handleStart = () => {
+      if (isSignedIn()) navigate("/game");
+      else navigate("/login", { state: { from: "/game" } });
+    };
+
     return (
         <main className="min-h-screen bg-white text-[#171717]">
           <div className="absolute top-6 right-6 z-10">
-          {user ? (
+          {signedIn && user ? (
             <WelcomeBadge name={user.name} avatar={user.avatar ?? user.picture} />
           ) : (
             <GoogleLoginButton />
@@ -69,10 +76,7 @@ export const Landing=()=>{
 
             {/* Single CTA */}
             <button
-               onClick={()=>{
-                navigate("/game")
-               }}
-               
+               onClick={handleStart}
                className="group mt-9 flex w-full items-center gap-4 rounded-xl bg-[#8BCB50] px-6 py-5 text-left text-[#171717] shadow-[0_5px_0_#679638] transition-all duration-200 hover:-translate-y-1 hover:bg-[#9AD963] hover:shadow-[0_7px_0_#679638] active:translate-y-1 active:shadow-none"
             >
               <span className="text-3xl">♟</span>
